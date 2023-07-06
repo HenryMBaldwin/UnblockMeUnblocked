@@ -1,4 +1,5 @@
 import pygame
+import math
 
 # Initialize Pygame
 pygame.init()
@@ -24,6 +25,40 @@ BLOCK_TYPES = {
     "LONG_BROWN":[(3, 1), BROWN, "LONG_BROWN"]  # 3 long block
       # 2 long red block
 }
+#center of each grid square for snapping and placement
+GRID_POSITIONS = [
+	(50,50), (150,50), (250,50),(350,50),(450,50),(550,50),
+	(50,150), (150,150), (250,150),(350,150),(450,150),(550,150),
+	(50,250), (150,250), (250,250),(350,250),(450,250),(550,250),
+	(50,350), (150,350), (250,350),(350,350),(450,350),(550,350),
+	(50,450), (150,450), (250,450),(350,450),(450,450),(550,450),
+	(50,550), (150,550), (250,550),(350,550),(450,550),(550,550),
+	]
+
+#function to handle grid snapping
+def snap(block,pos):
+	x = pos[0]
+	y = pos[1]
+
+	if block.vertical:
+		ret = (x-50,y-25)
+	else:
+		ret = (x-25,y-50)
+	#dont snap if mouse isnt over grid
+	if x >= 600:
+		return ret
+	min_dist = 600
+	#calculate closest point
+	for point in GRID_POSITIONS:
+		#pythag
+		distance = math.sqrt((abs(x - point[0])**2) + (abs(y-point[1])**2))
+		if distance < min_dist:
+			#check for red block
+			if block.block_type[2] != "RED" or point[1] == 250:
+				min_dist = distance
+				ret = (point[0]-50,point[1]-50)
+
+	return ret
 
 #Block class to allow for easier collision detection
 class Block:
@@ -47,12 +82,13 @@ class Block:
 
 	def rotate(self):
 		#Don't rotate if block is red
-		if block_type[2] == "RED":
+		if self.block_type[2] == "RED":
 			return
 		self.vertical = not self.vertical
 		temp = self.width
 		self.width = self.height
 		self.height = temp
+
 
 
 	def set_grid_pos(self, x, y):
@@ -161,20 +197,17 @@ while running:
                 #TODO: check for clicking on a currently existing block to delete
                 #TODO: check for placing down currently selected block on grid
 
-        elif event.type == pygame.MOUSEMOTION:
-            # Update the position of the selected block based on mouse movement
-            if selected_block is not None:
-            	#if block is red then lock it to row 3
-            	if selected_block.block_type[2] == "RED":
-            		selected_block.set_pos(event.pos[0] - 25,200)
-            	else:
-                	selected_block.set_pos(event.pos[0] - 25,event.pos[1] -50)
 
         elif event.type == pygame.KEYDOWN:
          	if event.key == pygame.K_r:
          		if not selected_block == None:
          			selected_block.rotate()
 
+    #handle snapping
+    if selected_block is not None:
+            	new_pos = snap(selected_block, pygame.mouse.get_pos())
+            	#if block is red then lock it to row 3
+            	selected_block.set_pos(new_pos[0],new_pos[1])
     # Clear the window
     window.fill(WHITE)
 
