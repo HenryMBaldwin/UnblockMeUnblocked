@@ -28,24 +28,6 @@ BLOCK_TYPES = {
 #Block class to allow for easier collision detection
 class Block:
 
-	#used for duplicating a block from the block buttons
-	def __init__(self, block, manager):
-		self.x = block.x
-		self.y = block.y
-		self.width = block.width
-		self.height = block.height
-		self.block_type = block.block_type
-		self.rect = pygame.draw.rect(window, self.block_type[1], (x, y, width, height))
- 
-		#grid position 
-		self.grid_x = block.grid_x
-		self.grid_y = block.grid_y
-		self.vertical = False
-
-		#block manager
-		self.manager = manager
-		self.manager.add(self)
-
 	def __init__(self, x, y, block_type, manager):
 		self.x = x
 		self.y = y
@@ -85,6 +67,10 @@ class Block:
 
 	def remove(self):
 		self.manager.remove(self)
+
+	#used for duplicating a block from the block buttons
+	def clone(self, manager):
+		return Block(self.x, self.y, self.block_type, manager)
 	
 
 #Keep track of blocks to draw them every frame
@@ -168,14 +154,14 @@ while running:
                 	if not selected_block == None:
                 		selected_block.remove()
                 	#clone clicked button and add it to block_manager
-                	selected_block = Block(button, block_manager)
+                	selected_block = button.clone(block_manager)
                 #TODO: check for clicking on a currently existing block to delete
                 #TODO: check for placing down currently selected block on grid
 
         elif event.type == pygame.MOUSEMOTION:
             # Update the position of the selected block based on mouse movement
             if selected_block is not None:
-                selected_block.set_pos = event.pos
+                selected_block.set_pos(event.pos[0],event.pos[1])
 
     # Clear the window
     window.fill(WHITE)
