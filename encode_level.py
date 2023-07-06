@@ -19,9 +19,9 @@ BLOCK_SIZE = WINDOW_HEIGHT // GRID_SIZE
 
 #Define block types
 BLOCK_TYPES = {
-    "RED":[(2, 1), RED], 
-    "BROWN":[(2, 1), BROWN],  # 2 long block
-    "LONG_BROWN":[(3, 1), BROWN]  # 3 long block
+    "RED":[(2, 1), RED, "RED"], 
+    "BROWN":[(2, 1), BROWN, "BROWN"],  # 2 long block
+    "LONG_BROWN":[(3, 1), BROWN, "LONG_BROWN"]  # 3 long block
       # 2 long red block
 }
 
@@ -45,8 +45,11 @@ class Block:
 		self.manager = manager
 		self.manager.add(self)
 
-	def toggle_vertical(self):
-		self.vertical = not vertical
+	def rotate(self):
+		#Don't rotate if block is red
+		if block_type[2] == "RED":
+			return
+		self.vertical = not self.vertical
 		temp = self.width
 		self.width = self.height
 		self.height = temp
@@ -58,7 +61,7 @@ class Block:
 		#set block top position to align to grid
 		self.set_pos(100*grid_x, 100*grid_y)
 
-	def set_pos(self,x,y):
+	def set_pos(self,x,y): 
 		self.x = x
 		self.y = y
 			
@@ -161,7 +164,16 @@ while running:
         elif event.type == pygame.MOUSEMOTION:
             # Update the position of the selected block based on mouse movement
             if selected_block is not None:
-                selected_block.set_pos(event.pos[0],event.pos[1])
+            	#if block is red then lock it to row 3
+            	if selected_block.block_type[2] == "RED":
+            		selected_block.set_pos(event.pos[0] - 25,200)
+            	else:
+                	selected_block.set_pos(event.pos[0] - 25,event.pos[1] -50)
+
+        elif event.type == pygame.KEYDOWN:
+         	if event.key == pygame.K_r:
+         		if not selected_block == None:
+         			selected_block.rotate()
 
     # Clear the window
     window.fill(WHITE)
