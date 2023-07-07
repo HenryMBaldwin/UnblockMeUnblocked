@@ -1,6 +1,6 @@
 import pygame
 import math
-
+import copy
 # Initialize Pygame
 pygame.init()
 
@@ -35,33 +35,102 @@ GRID_POSITIONS = [
 	(50,550), (150,550), (250,550),(350,550),(450,550),(550,550),
 	]
 
-#function to handle grid snapping
-def snap(block,pos):
-	x = pos[0]
-	y = pos[1]
 
-	if block.vertical:
-		ret = (x-50,y-25)
-	else:
-		ret = (x-25,y-50)
-	#dont snap if mouse isnt over grid
-	if x >= 600:
-		#set grid positions to none
-		block.set_grid_pos(None,None)
-		return ret
-	min_dist = 600
-	#calculate closest point
-	for point in GRID_POSITIONS:
-		#pythag
-		distance = math.sqrt((abs(x - point[0])**2) + (abs(y-point[1])**2))
-		if distance < min_dist:
-			#check for red block
-			if block.block_type[2] != "RED" or point[1] == 250:
-				min_dist = distance
-				ret = (point[0]-50,point[1]-50)
-	#set grid position
-	block.set_grid_pos(ret[0]%100,ret[1]%100)
-	return ret
+
+#Class keeps track of grid
+class Grid:
+	def __init__(self):
+		#empty grid
+		self.grid = [[".", ".", ".", ".",".","."],
+		 [".", ".", ".", ".",".","."],
+		 [".", ".", ".", ".",".","."],
+		 [".", ".", ".", ".",".","."],
+		 [".", ".", ".", ".",".","."],
+		 [".", ".", ".", ".",".","."]]
+
+	#resolves grid position [0][0] to [5][5] from coordinate
+	def resolve_pos(self,x,y):
+		if x >= 600 or x < 0 or y >= 600 or y < 0:
+			return None
+		return (int(x/100),int(y/100))
+
+	#checks if closest position is free for specific block	 
+	def check_pos(self, block, pos):
+		x = pos[0]
+		y = pos[1]
+
+		grid_pos = self.resolve_pos(x,y)
+
+		if grid_pos == None:
+			return False
+
+		grid_x = grid_pos[0]
+		grid_y = grid_pos[1]
+
+		for i in range(3 if block.block_type[2] == "LONG_BROWN" else 2):
+			#print(i)
+			if (i + (grid_y if block.vertical else grid_x))> 5:
+				return False
+			if block.vertical:
+				if self.grid[grid_x][grid_y+i] != ".":
+					return False
+			else:
+				if self.grid[grid_x+i][grid_y] != ".":
+					return False
+		return True
+		
+	#function to handle grid snapping
+	def snap(self, block,pos):
+		x = pos[0]
+		y = pos[1]
+
+		if block.vertical:
+			ret = (x-50,y-25)
+			new_pos = (x-50,y-25)
+		else:
+			ret = (x-25,y-50)
+			new_pos = (x-25,y-50)
+
+		#dont snap if mouse isnt over grid
+		if x >= 600:
+			#set grid positions to none
+			block.set_grid_pos(None,None)
+			return ret
+		min_dist = 600
+		#calculate closest point
+		for point in GRID_POSITIONS:
+			#pythag
+			distance = math.sqrt((abs(x - point[0])**2) + (abs(y-point[1])**2))
+			if distance < min_dist:
+				#check for red block
+				if block.block_type[2] != "RED" or point[1] == 250:
+					min_dist = distance
+					new_pos = (point[0]-50,point[1]-50)
+		#set grid position
+		if self.check_pos(block,new_pos):
+			ret = new_pos
+			grid_pos = self.resolve_pos(new_pos[0],new_pos[1])
+			block.set_grid_pos(grid_pos[0], grid_pos[1])
+		else:
+			block.set_grid_pos(None,None)
+		block.set_pos(ret[0],ret[1])
+
+	def place(self,block,grid_pos):
+		grid_x = grid_pos[0]
+		grid_y = grid_pos[1]
+
+		code_char = "B" if block.block_type == ["LONG_BROWN"] else "A"
+		if block.vertical:
+			code_char = code_char.lower()
+		for i in range(3 if block.block_type == ["LONG_BROWN"] else 2):
+			
+			if block.vertical:
+				self.grid[grid_x][grid_y+i] = code_char
+			else:
+				self.grid[grid_x+i][grid_y] =code_char
+
+	def remove(self,block):
+		block.manager.remove(block)
 
 #Block class to allow for easier collision detection
 class Block:
@@ -141,7 +210,8 @@ class Block_Manager:
 				return block
 		return None
 
-
+#Create Grid encoding
+grid = Grid()
 
 # Set selection area dimensions
 SELECTION_WIDTH = WINDOW_WIDTH - WINDOW_HEIGHT
@@ -201,7 +271,9 @@ while running:
                 	#check if on grid
                 		if selected_block.grid_x != None:
                 				#deselect block
+                				grid.place(selected_block,(selected_block.grid_x,selected_block.grid_y))
                 				selected_block = None
+                				
 
 
         elif event.type == pygame.KEYDOWN:
@@ -211,9 +283,7 @@ while running:
 
     #handle snapping
     if selected_block is not None:
-            	new_pos = snap(selected_block, pygame.mouse.get_pos())
-            	#if block is red then lock it to row 3
-            	selected_block.set_pos(new_pos[0],new_pos[1])
+            	new_pos = grid.snap(selected_block, pygame.mouse.get_pos())
     # Clear the window
     window.fill(WHITE)
 
