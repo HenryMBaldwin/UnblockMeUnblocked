@@ -46,6 +46,8 @@ def snap(block,pos):
 		ret = (x-25,y-50)
 	#dont snap if mouse isnt over grid
 	if x >= 600:
+		#set grid positions to none
+		block.set_grid_pos(None,None)
 		return ret
 	min_dist = 600
 	#calculate closest point
@@ -57,7 +59,8 @@ def snap(block,pos):
 			if block.block_type[2] != "RED" or point[1] == 250:
 				min_dist = distance
 				ret = (point[0]-50,point[1]-50)
-
+	#set grid position
+	block.set_grid_pos(ret[0]%100,ret[1]%100)
 	return ret
 
 #Block class to allow for easier collision detection
@@ -93,9 +96,7 @@ class Block:
 
 	def set_grid_pos(self, x, y):
 		self.grid_x = x
-		self.grid.y = y
-		#set block top position to align to grid
-		self.set_pos(100*grid_x, 100*grid_y)
+		self.grid_y = y
 
 	def set_pos(self,x,y): 
 		self.x = x
@@ -195,7 +196,12 @@ while running:
                 	#clone clicked button and add it to block_manager
                 	selected_block = button.clone(block_manager)
                 #TODO: check for clicking on a currently existing block to delete
-                #TODO: check for placing down currently selected block on grid
+                # place down currently selected block on grid
+                if not selected_block == None:
+                	#check if on grid
+                		if selected_block.grid_x != None:
+                				#deselect block
+                				selected_block = None
 
 
         elif event.type == pygame.KEYDOWN:
