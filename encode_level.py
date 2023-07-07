@@ -48,6 +48,16 @@ class Grid:
 		 [".", ".", ".", ".",".","."],
 		 [".", ".", ".", ".",".","."]]
 
+	def print_state(self):
+		#prints a game state for debugging purposes		
+		for row in self.grid:
+				line = "[ "
+				for cell in row:
+					line += cell + " "
+				line += "]"
+				print(line) 
+		print("---------------")
+
 	#resolves grid position [0][0] to [5][5] from coordinate
 	def resolve_pos(self,x,y):
 		if x >= 600 or x < 0 or y >= 600 or y < 0:
@@ -119,17 +129,33 @@ class Grid:
 		grid_x = grid_pos[0]
 		grid_y = grid_pos[1]
 
-		code_char = "B" if block.block_type == ["LONG_BROWN"] else "A"
+		if block.block_type[2] == "LONG_BROWN":
+			code_char = "B"
+		elif block.block_type[2] == "BROWN":
+			code_char = "A"
+		else:
+			code_char = "R"
+
 		if block.vertical:
 			code_char = code_char.lower()
+
 		for i in range(3 if block.block_type == ["LONG_BROWN"] else 2):
 			
 			if block.vertical:
 				self.grid[grid_x][grid_y+i] = code_char
 			else:
-				self.grid[grid_x+i][grid_y] =code_char
+				self.grid[grid_x+i][grid_y] = code_char
 
 	def remove(self,block):
+		grid_x = block.grid_x
+		grid_y = block.grid_y
+
+		for i in range(3 if block.block_type == ["LONG_BROWN"] else 2):
+			if block.vertical:
+				self.grid[grid_x][grid_y+i] = "."
+			else:
+				self.grid[grid_x+i][grid_y] = "."
+
 		block.manager.remove(block)
 
 #Block class to allow for easier collision detection
@@ -258,28 +284,37 @@ while running:
             # Check if the left mouse button is pressed
             if event.button == 1:
                 #check if a button has been clicked
-                button = button_manager.detect_click(pygame.mouse.get_pos())
-                if not button == None:
+            	button = button_manager.detect_click(pygame.mouse.get_pos())
+            	if not button == None:
                 	#delete previous selected block
                 	if not selected_block == None:
                 		selected_block.remove()
                 	#clone clicked button and add it to block_manager
                 	selected_block = button.clone(block_manager)
-                #TODO: check for clicking on a currently existing block to delete
+               
                 # place down currently selected block on grid
-                if not selected_block == None:
+            	if not selected_block == None:
                 	#check if on grid
                 		if selected_block.grid_x != None:
                 				#deselect block
                 				grid.place(selected_block,(selected_block.grid_x,selected_block.grid_y))
                 				selected_block = None
                 				
-
+                #delete currently placed block
+            	else:
+            		block = block_manager.detect_click(pygame.mouse.get_pos())
+            		if not block == None:
+            			grid.remove(block)
 
         elif event.type == pygame.KEYDOWN:
+        	#rotate block
          	if event.key == pygame.K_r:
          		if not selected_block == None:
          			selected_block.rotate()
+         	#put away selected block
+         	if event.key == pygame.K_ESCAPE:
+         		if not selected_block == None:
+         			block_manager.remove(selected_block)
 
     #handle snapping
     if selected_block is not None:
@@ -296,6 +331,8 @@ while running:
     # Draw the other blocks
     block_manager.draw()
 
+    #print grid
+    grid.print_state()
     # Draw the grid
     for x in range(0, WINDOW_HEIGHT, BLOCK_SIZE):
         pygame.draw.line(window, GRAY, (0, x), (WINDOW_HEIGHT, x))
