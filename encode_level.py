@@ -42,7 +42,7 @@ GRID_POSITIONS = [
 
 #Class keeps track of grid
 class Grid:
-	def __init__(self):
+	def __init__(self,manager):
 		#empty grid
 		self.grid = [[".", ".", ".", ".",".","."],
 		 [".", ".", ".", ".",".","."],
@@ -52,8 +52,25 @@ class Grid:
 		 [".", ".", ".", ".",".","."]]
 		
 		self.unblocker = unblock.Unblocker()
+		self.manager 
 
 
+	#decodes grid and places it on gameboard
+	def decode(self):
+		#clear visual grid
+		self.remove_all_visual()
+
+		for y in range(len(self.grid)):
+			for x in range(len(y)):
+				if self.get_grid_pos(x,y) != ".":
+					#get side from unblocker
+					side = self.unblocker.get_gridside(y,x,self.grid)
+		
+	#sets internal grid
+	#dangerous: desyncs visual grid from internal
+	def set_grid(self,grid):
+		self.grid = grid
+		
 	#Updates a grid position
 	#This function exists because the urge to reference grid like grid[grid_x][grid_y] is too powerful and I keep making mistakes because of it
 	def update_grid_pos(self, x, y, val):
@@ -174,6 +191,19 @@ class Grid:
 
 		block.manager.remove(block)
 
+	#cleans board both in visual and internal grid
+	def remove_all(self):
+		for block in self.manager.block_arr:
+			if block.grid_x != None
+				self.remove(block)
+
+	#remove all block objects but does not clean board.
+	#Dangerous, desyncs board from internal grid
+	def remove_all_visual():
+		for block in self.manager.block_arr:
+			if block.grid_x != None
+				block.remove()
+
 #Block class to allow for easier collision detection
 class Block:
 
@@ -255,8 +285,11 @@ class Block_Manager:
 				return block
 		return None
 
+#Create Block Manager
+block_manager = Block_Manager()
+
 #Create Grid encoding
-grid = Grid()
+grid = Grid(block_manager)
 
 # Set selection area dimensions
 SELECTION_WIDTH = WINDOW_WIDTH - WINDOW_HEIGHT
@@ -285,8 +318,7 @@ Block(700, 450, BLOCK_TYPES["LONG_BROWN"], button_manager)
 # Blocks
 #
 
-#Create Block Manager
-block_manager = Block_Manager()
+
 
 # Track the currently selected block
 selected_block = None
