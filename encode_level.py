@@ -155,7 +155,7 @@ class Grid:
 		if block.vertical:
 			code_char = code_char.lower()
 
-		for i in range(3 if block.block_type == ["LONG_BROWN"] else 2):
+		for i in range(3 if block.block_type[2] == "LONG_BROWN" else 2):
 			
 			if block.vertical:
 				self.update_grid_pos(grid_x, grid_y+i, code_char) 
@@ -166,7 +166,7 @@ class Grid:
 		grid_x = block.grid_x
 		grid_y = block.grid_y
 
-		for i in range(3 if block.block_type == ["LONG_BROWN"] else 2):
+		for i in range(3 if block.block_type[2] == "LONG_BROWN" else 2):
 			if block.vertical:
 				self.update_grid_pos(grid_x, grid_y + i, ".")
 			else:
@@ -224,7 +224,7 @@ class Block:
 		return Block(self.x, self.y, self.block_type, manager)
 
 	#for custom buttons
-	def write(self, manager)
+	#def write(self, manager)
 	
 
 #Keep track of blocks to draw them every frame
@@ -279,7 +279,7 @@ button_manager = Block_Manager()
 Block(700, 50, BLOCK_TYPES["RED"], button_manager)
 Block(700, 250, BLOCK_TYPES["BROWN"], button_manager)
 Block(700, 450, BLOCK_TYPES["LONG_BROWN"], button_manager)
-Block()
+#Block()
 
 #
 # Blocks
@@ -334,13 +334,21 @@ while running:
          	#put away selected block
          	if event.key == pygame.K_ESCAPE:
          		if not selected_block == None:
-         			block_manager.remove(selected_block)
+         			selected_block.remove()
+         			selected_block = None
 
     #handle snapping
     if selected_block is not None:
             	new_pos = grid.snap(selected_block, pygame.mouse.get_pos())
     # Clear the window
     window.fill(WHITE)
+
+    #print grid
+    grid.print_state()
+    # Draw the grid
+    for x in range(0, WINDOW_HEIGHT, BLOCK_SIZE):
+        pygame.draw.line(window, GRAY, (0, x), (WINDOW_HEIGHT, x))
+        pygame.draw.line(window, GRAY, (x, 0), (x, WINDOW_HEIGHT))
 
     # Draw the block selection area
     pygame.draw.rect(window, GRAY, (WINDOW_HEIGHT, 0, SELECTION_WIDTH, SELECTION_HEIGHT))
@@ -351,13 +359,7 @@ while running:
     # Draw the other blocks
     block_manager.draw()
 
-    #print grid
-    grid.print_state()
-    # Draw the grid
-    for x in range(0, WINDOW_HEIGHT, BLOCK_SIZE):
-        pygame.draw.line(window, GRAY, (0, x), (WINDOW_HEIGHT, x))
-        pygame.draw.line(window, GRAY, (x, 0), (x, WINDOW_HEIGHT))
-
+    
     # Update the display
     pygame.display.update()
     clock.tick(60)
