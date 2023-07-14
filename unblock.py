@@ -84,7 +84,7 @@ def solve_board(board):
 
 		#gets the side of the block you're looking at
 		# r = right, l = left, t = top, b = bottom, m = middle, n = not a block
-		def get_side(r,c):
+		def get_gridside(r,c):
 			nonlocal b
 
 			curr = b[r][c]
@@ -165,7 +165,7 @@ def solve_board(board):
 				curr = copy.deepcopy(b[r][c])
 				#check if not empty
 				if curr != ".":
-					side = get_side(r,c)
+					side = get_gridside(r,c)
 					move = "(" + str(r) + "," + str(c) + ") -> ("
 					if curr.isupper():
 						#move right

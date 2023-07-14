@@ -48,6 +48,16 @@ class Grid:
 		 [".", ".", ".", ".",".","."],
 		 [".", ".", ".", ".",".","."]]
 
+
+	#Updates a grid position
+	#This function exists because the urge to reference grid like grid[grid_x][grid_y] is too powerful and I keep making mistakes because of it
+	def update_grid_pos(self, x, y, val):
+		self.grid[y][x] = val
+
+	#Same reason as above but getter
+	def get_grid_pos(self, x, y):
+		return self.grid[y][x]	
+
 	def print_state(self):
 		#prints a game state for debugging purposes		
 		for row in self.grid:
@@ -63,6 +73,7 @@ class Grid:
 		if x >= 600 or x < 0 or y >= 600 or y < 0:
 			return None
 		return (int(x/100),int(y/100))
+
 
 	#checks if closest position is free for specific block	 
 	def check_pos(self, block, pos):
@@ -82,10 +93,10 @@ class Grid:
 			if (i + (grid_y if block.vertical else grid_x))> 5:
 				return False
 			if block.vertical:
-				if self.grid[grid_x][grid_y+i] != ".":
+				if self.get_grid_pos(grid_x, grid_y+i) != ".":
 					return False
 			else:
-				if self.grid[grid_x+i][grid_y] != ".":
+				if self.get_grid_pos(grid_x + i, grid_y) != ".":
 					return False
 		return True
 		
@@ -142,9 +153,9 @@ class Grid:
 		for i in range(3 if block.block_type == ["LONG_BROWN"] else 2):
 			
 			if block.vertical:
-				self.grid[grid_x][grid_y+i] = code_char
+				self.update_grid_pos(grid_x, grid_y+i, code_char) 
 			else:
-				self.grid[grid_x+i][grid_y] = code_char
+				self.update_grid_pos(grid_x+i, grid_y, code_char) 
 
 	def remove(self,block):
 		grid_x = block.grid_x
@@ -152,9 +163,9 @@ class Grid:
 
 		for i in range(3 if block.block_type == ["LONG_BROWN"] else 2):
 			if block.vertical:
-				self.grid[grid_x][grid_y+i] = "."
+				self.update_grid_pos(grid_x, grid_y + i, ".")
 			else:
-				self.grid[grid_x+i][grid_y] = "."
+				self.update_grid_pos(grid_x + i, grid_y, ".")
 
 		block.manager.remove(block)
 
@@ -167,7 +178,7 @@ class Block:
 		self.width = BLOCK_SIZE * block_type[0][0]
 		self.height = BLOCK_SIZE * block_type[0][1]
 		self.block_type = block_type
-		self.rect = pygame.draw.rect(window, self.block_type[1], (x, y, self.width, self.height))
+		self.rect = pygame.draw.rect(window, self.block_type[1], (x, y, self.width, self.height), 10, 10)
 
 		#grid position
 		self.grid_x = None
