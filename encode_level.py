@@ -1,6 +1,9 @@
 import pygame
 import math
 import copy
+import unblock
+from pygame.locals import *
+
 # Initialize Pygame
 pygame.init()
 
@@ -47,6 +50,8 @@ class Grid:
 		 [".", ".", ".", ".",".","."],
 		 [".", ".", ".", ".",".","."],
 		 [".", ".", ".", ".",".","."]]
+		
+		self.unblocker = unblock.Unblocker()
 
 
 	#Updates a grid position
@@ -217,6 +222,9 @@ class Block:
 	#used for duplicating a block from the block buttons
 	def clone(self, manager):
 		return Block(self.x, self.y, self.block_type, manager)
+
+	#for custom buttons
+	def write(self, manager)
 	
 
 #Keep track of blocks to draw them every frame
@@ -271,6 +279,7 @@ button_manager = Block_Manager()
 Block(700, 50, BLOCK_TYPES["RED"], button_manager)
 Block(700, 250, BLOCK_TYPES["BROWN"], button_manager)
 Block(700, 450, BLOCK_TYPES["LONG_BROWN"], button_manager)
+Block()
 
 #
 # Blocks
