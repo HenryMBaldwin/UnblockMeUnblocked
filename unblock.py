@@ -84,14 +84,10 @@ class Unblocker:
 			m.pop
 		return []
 
-	#returns a list of possible next states and the corrisponding move like [state, move]
-	#where state is a board array and move is a string
-	# as a rule if it sees the top of a block try to move it up and if it sees the bottom try to move it down, same with left and right, just to simplify
-	def gen_states(self, b):
 
-		#gets the side of the block you're looking at
-		# r = right, l = left, t = top, b = bottom, m = middle, n = not a block
-		def get_gridside(r,c):
+	#gets the side of the block you're looking at
+	# r = right, l = left, t = top, b = bottom, m = middle, n = not a block
+	def get_gridside(self,r,c,b):
 
 			curr = b[r][c]
 
@@ -156,7 +152,10 @@ class Unblocker:
 			print("error non a valid side")
 			return "n"
 
-
+	#returns a list of possible next states and the corrisponding move like [state, move]
+	#where state is a board array and move is a string
+	# as a rule if it sees the top of a block try to move it up and if it sees the bottom try to move it down, same with left and right, just to simplify
+	def gen_states(self, b):
 
 		states = []
 
@@ -171,7 +170,7 @@ class Unblocker:
 				curr = copy.deepcopy(b[r][c])
 				#check if not empty
 				if curr != ".":
-					side = get_gridside(r,c)
+					side = self.get_gridside(r,c,b)
 					move = "(" + str(r) + "," + str(c) + ") -> ("
 					if curr.isupper():
 						#move right
