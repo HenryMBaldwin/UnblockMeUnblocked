@@ -8,8 +8,12 @@ class Unblocker:
 		for move in sol:
 			print(move)
 
-	#
-	def solve_board(self, board):
+	#Entry point into Unblocker
+	def solve_board(self, board, mutex, comms):
+		#mutex
+		self.mutex = mutex
+		#used to pass current state back and forth
+		self.comms = comms
 		#stores hashed already visited game states
 		self.hashes = []
 		#stores current states to be explored 
@@ -27,6 +31,9 @@ class Unblocker:
 		return self.smooth_moves(self.solve_shortest([board, empty_move]))
 
 	def print_state(self,state):
+		self.mutex.acquire()
+		self.comms = state
+		
 		#prints a game state for debugging purposes		
 		for row in state:
 				line = "[ "
@@ -35,9 +42,7 @@ class Unblocker:
 				line += "]"
 				print(line) 
 		print("---------------")
-
-		
-
+		self.mutex.release()
 	#breadth first search version for shortest solve
 	def solve_shortest(self, b):
 		self.queue.append(b)

@@ -3,6 +3,11 @@ import math
 import copy
 import unblock
 from pygame.locals import *
+from threading import Thread, Lock
+import json
+
+#Mutex
+mutex = Lock()
 
 # Initialize Pygame
 pygame.init()
@@ -42,7 +47,7 @@ GRID_POSITIONS = [
 
 #Class keeps track of grid
 class Grid:
-	def __init__(self,manager):
+	def __init__(self,manager, button_manager, mutex):
 		#empty grid
 		self.grid = [[".", ".", ".", ".",".","."],
 		 [".", ".", ".", ".",".","."],
@@ -53,14 +58,24 @@ class Grid:
 		
 		self.unblocker = unblock.Unblocker()
 		self.manager = manager
+		self.button_manager = button_manager
+		self.mutex = mutex
 		#keeps track of whether red block is placed
 		self.red = False
-
+		self.solving = False
+		self.sol = None
 	def solve(self):
-		sol = self.unblocker.solve_board(self.grid)
-		print(str(len(sol))+" moves")
-		for move in sol:
-			print(move)
+		self.sol = Thread(target = self.unblocker.solve_board,args = (self.grid, self.mutex, self.grid))
+		self.solving = True
+		self.sol.start()
+		#print(str(len(sol))+" moves")
+		#for move in sol:
+		#	print(move)
+
+	def check_solve(self):
+		if not self.sol.is_alive():
+
+			self.solving = False
 
 	#checks if red block is present
 	def check_red(self):
@@ -69,20 +84,21 @@ class Grid:
 				if x == "R":
 					self.red = True
 	#decodes grid and places it on gameboard
-	def decode(self, button_manager):
-
+	def decode(self):
+		self.mutex.acquire()
+		print("decoding")
 		encodings = {
 		"R":"RED",
 		"A":"BROWN",
 		"B":"LONG_BROWN"}
 
 		#need button manager for block
-		buttons = button_manager
+		buttons = self.button_manager
 		#clear visual grid
 		self.remove_all_visual()
 
 		for y in range(len(self.grid)):
-			for x in range(len(y)):
+			for x in range(len(self.grid[y])):
 				curr = self.get_grid_pos(x,y)
 				if curr != ".":
 					#current block
@@ -91,18 +107,22 @@ class Grid:
 					#get side from unblocker
 					side = self.unblocker.get_gridside(y,x,self.grid)
 					#only place blocks from top or left
-					if side == "t" or side == "l":
+					if side == "u" or side == "l":
 						coords = self.reverse_resolve(x,y)
+						#print(str(coords))
 						for block in buttons.block_arr:
 							if block.block_type[2] == encodings[curr.upper()]:
-								selected_block = block.clone(self.block_manager)
+								selected_block = block.clone(self.manager)
 
 
 						if not curr.isupper():
 							selected_block.rotate()
+						selected_block.set_pos(coords[0],coords[1])
+						selected_block.set_grid_pos(x,y)
+						self.place(selected_block, (x,y))
+						print("placed")
 
-						self.snap(selected_block,coords)
-						self.place(selected_block,(selected_block.grid_x,selected_block.grid_y))
+		self.mutex.release()
 
 
 	#sets internal grid
@@ -240,16 +260,26 @@ class Grid:
 
 	#cleans board both in visual and internal grid
 	def remove_all(self):
-		for block in self.manager.block_arr:
-			if block.grid_x != None:
-				self.remove(block)
+		for i in reversed(range(len(self.manager.block_arr))):
+			self.remove(self.manager.block_arr[i])
+		
 
 	#remove all block objects but does not clean board.
 	#Dangerous, desyncs board from internal grid
-	def remove_all_visual():
-		for block in self.manager.block_arr:
-			if block.grid_x != None:
-				block.remove()
+	def remove_all_visual(self):
+		for i in reversed(range(len(self.manager.block_arr))):
+			self.manager.block_arr[i].remove()
+
+	def save_to_json(self):
+		with open("grid.json", 'w') as json_file:
+			json.dump(self.grid, json_file)		
+
+	def load_from_json(self):
+		with open("grid.json", 'r') as json_file:
+			temp = json.load(json_file)
+			if temp != None:
+				self.grid = temp
+				self.decode()
 
 #Block class to allow for easier collision detection
 class Block:
@@ -318,6 +348,7 @@ class Block_Manager:
 
 	def add(self, block):
 		self.block_arr.append(block)
+		#print(len(self.block_arr))
 
 	def remove(self, block):
 		self.block_arr.remove(block)
@@ -377,8 +408,11 @@ class Menu_Button:
 #Create Block Manager
 block_manager = Block_Manager()
 
+#Create Button Manager
+button_manager = Block_Manager()
+
 #Create Grid encoding
-grid = Grid(block_manager)
+grid = Grid(block_manager,button_manager, mutex)
 
 # Set selection area dimensions
 SELECTION_WIDTH = WINDOW_WIDTH - WINDOW_HEIGHT
@@ -394,8 +428,7 @@ clock = pygame.time.Clock()
 # Init Buttons
 #
 
-#Create Button Manager
-button_manager = Block_Manager()
+
 
 #Add buttons
 Block(700, 50, BLOCK_TYPES["RED"], button_manager)
@@ -416,7 +449,12 @@ menu_button_y = 50
 
 #solve button
 Menu_Button(menu_button_x,menu_button_y, "Solve", 10, menu_manager, grid.solve)
-
+menu_button_y = menu_button_y+25
+Menu_Button(menu_button_x, menu_button_y, "Clear",10,menu_manager, grid.remove_all)
+menu_button_y = menu_button_y+25
+Menu_Button(menu_button_x, menu_button_y, "Save",10,menu_manager, grid.save_to_json)
+menu_button_y = menu_button_y+25
+Menu_Button(menu_button_x, menu_button_y, "Load",10,menu_manager, grid.load_from_json)
 # Track the currently selected block
 selected_block = None
 
@@ -425,6 +463,11 @@ selected_block = None
 # Main game loop
 running = True
 while running:
+    if grid.solving:
+    	grid.decode()
+    	grid.check_solve()
+   
+    grid.print_state()
     # Process events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -495,6 +538,7 @@ while running:
     
     # Update the display
     pygame.display.update()
+    #clock.tick(60)
     clock.tick(60)
 
 # Quit the game
