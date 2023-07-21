@@ -56,6 +56,8 @@ class Grid:
 		#keeps track of whether red block is placed
 		self.red = False
 
+	def solve(self):
+		self.unblocker.solve_board(self.grid)
 
 	#checks if red block is present
 	def check_red(self):
@@ -326,9 +328,38 @@ class Block_Manager:
 				return block
 		return None
 
+class Menu_Manager(Block_Manager):
+	def detect_click(self, mous_pos):
+		for block in self.block_arr:
+			if block.rect.collidepoint(mouse_pos):
+				block.click()
+	
+class Menu_Button:
+	def __init__(self,x,y, text, manager, func):
+		self.x = x
+		self.y = y
+		self.manager = manager
+		self.func = func
+		self.width = 60
+		self.height = 20
+		self.primary_color = (255, 255, 255)
+		self.press_color = (174, 180, 245)
+		self.font_color = (0,0,0)
+		self.font = pygame.font.SysFont('Corbel',35)
+		self.text = self.font.render(text, True, self.font_color)
 
-#Create Menu Manager
-menu_manager = Block_Manager()
+		self.rect = pygame.draw.rect(window, self.primary_color, (self.x, self.y, self.width, self.height))
+		window.blit(self.text, (self.x, self.y))
+
+	def draw(self):
+		self.rect = pygame.draw.rect(window, self.primary_color, (self.x, self.y, self.width, self.height))
+		window.blit(self.text, (self.x, self.y))
+
+	def click(self, args = None):
+		pass
+
+
+
 
 #Create Block Manager
 block_manager = Block_Manager()
@@ -360,10 +391,18 @@ Block(700, 450, BLOCK_TYPES["LONG_BROWN"], button_manager)
 #Block()
 
 #
-# Blocks
+# Menu Manager
 #
 
+#Create Menu Manager
+menu_manager = Menu_Manager()
 
+#menu buttons
+menu_button_x = WINDOW_WIDTH - 80
+menu_button_y = 50
+
+#solve button
+Menu_Button(menu_button_x,menu_button_y, "Solve", menu_manager, grid.solve)
 
 # Track the currently selected block
 selected_block = None
@@ -382,6 +421,10 @@ while running:
             if event.button == 1:
                 #check if a button has been clicked
             	button = button_manager.detect_click(pygame.mouse.get_pos())
+            	#check if block has been clicked
+            	block = block_manager.detect_click(pygame.mouse.get_pos())
+            	#check if menubutton has been clicked. If so its function will instantly be called
+            	menu_manager.detect_click(pygame.mouse.get_pos())
             	if not button == None:
                 	#delete previous selected block
                 	if not selected_block == None:
@@ -398,10 +441,8 @@ while running:
                 				selected_block = None
                 				
                 #delete currently placed block
-            	else:
-            		block = block_manager.detect_click(pygame.mouse.get_pos())
-            		if not block == None:
-            			grid.remove(block)
+            	elif not block == None:
+            		grid.remove(block)
 
         elif event.type == pygame.KEYDOWN:
         	#rotate block
@@ -421,7 +462,7 @@ while running:
     window.fill(WHITE)
 
     #print grid
-    grid.print_state()
+    #grid.print_state()
     # Draw the grid
     for x in range(0, WINDOW_HEIGHT, BLOCK_SIZE):
         pygame.draw.line(window, GRAY, (0, x), (WINDOW_HEIGHT, x))
@@ -436,6 +477,8 @@ while running:
     # Draw the other blocks
     block_manager.draw()
 
+    #draw Menu Buttons
+    menu_manager.draw()
     
     # Update the display
     pygame.display.update()
