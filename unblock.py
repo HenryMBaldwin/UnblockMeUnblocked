@@ -9,11 +9,11 @@ class Unblocker:
 			print(move)
 
 	#Entry point into Unblocker
-	def solve_board(self, board, mutex, comms):
+	def solve_board(self, board, mutex, grid):
 		#mutex
 		self.mutex = mutex
 		#used to pass current state back and forth
-		self.comms = comms
+		self.grid = grid
 		#stores hashed already visited game states
 		self.hashes = []
 		#stores current states to be explored 
@@ -32,7 +32,7 @@ class Unblocker:
 
 	def print_state(self,state):
 		self.mutex.acquire()
-		self.comms = state
+		self.grid.grid = state
 		
 		#prints a game state for debugging purposes		
 		for row in state:
@@ -40,8 +40,8 @@ class Unblocker:
 				for cell in row:
 					line += cell + " "
 				line += "]"
-				print(line) 
-		print("---------------")
+		#		print(line) 
+		#print("---------------")
 		self.mutex.release()
 	#breadth first search version for shortest solve
 	def solve_shortest(self, b):

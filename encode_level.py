@@ -64,8 +64,9 @@ class Grid:
 		self.red = False
 		self.solving = False
 		self.sol = None
+
 	def solve(self):
-		self.sol = Thread(target = self.unblocker.solve_board,args = (self.grid, self.mutex, self.grid))
+		self.sol = Thread(target = self.unblocker.solve_board,args = (self.grid, self.mutex, self))
 		self.solving = True
 		self.sol.start()
 		#print(str(len(sol))+" moves")
@@ -85,8 +86,8 @@ class Grid:
 					self.red = True
 	#decodes grid and places it on gameboard
 	def decode(self):
-		self.mutex.acquire()
-		print("decoding")
+		#self.mutex.acquire()
+		#print("decoding")
 		encodings = {
 		"R":"RED",
 		"A":"BROWN",
@@ -120,9 +121,9 @@ class Grid:
 						selected_block.set_pos(coords[0],coords[1])
 						selected_block.set_grid_pos(x,y)
 						self.place(selected_block, (x,y))
-						print("placed")
+						#print("placed")
 
-		self.mutex.release()
+		#self.mutex.release()
 
 
 	#sets internal grid
@@ -219,6 +220,7 @@ class Grid:
 			block.set_grid_pos(grid_pos[0], grid_pos[1])
 		else:
 			block.set_grid_pos(None,None)
+			
 		block.set_pos(ret[0],ret[1])
 
 	def place(self,block,grid_pos):
@@ -463,83 +465,85 @@ selected_block = None
 # Main game loop
 running = True
 while running:
-    if grid.solving:
-    	grid.decode()
-    	grid.check_solve()
+	mutex.acquire()
+	if grid.solving:
+		grid.decode()
+		grid.check_solve()
    
-    grid.print_state()
-    # Process events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            # Check if the left mouse button is pressed
-            if event.button == 1:
-                #check if a button has been clicked
-            	button = button_manager.detect_click(pygame.mouse.get_pos())
-            	#check if block has been clicked
-            	block = block_manager.detect_click(pygame.mouse.get_pos())
-            	#check if menubutton has been clicked. If so its function will instantly be called
-            	menu_manager.detect_click(pygame.mouse.get_pos())
-            	if not button == None:
-                	#delete previous selected block
-                	if not selected_block == None:
-                		selected_block.remove()
-                	#clone clicked button and add it to block_manager
-                	selected_block = button.clone(block_manager)
-               
-                # place down currently selected block on grid
-            	if not selected_block == None:
-                	#check if on grid
-                		if selected_block.grid_x != None:
-                				#deselect block
-                				grid.place(selected_block,(selected_block.grid_x,selected_block.grid_y))
-                				selected_block = None
-                				
-                #delete currently placed block
-            	elif not block == None:
-            		grid.remove(block)
+	grid.print_state()
+	# Process events
+	for event in pygame.event.get():
+	    if event.type == pygame.QUIT:
+	        running = False
+	    elif event.type == pygame.MOUSEBUTTONDOWN:
+	        # Check if the left mouse button is pressed
+	        if event.button == 1:
+	            #check if a button has been clicked
+	        	button = button_manager.detect_click(pygame.mouse.get_pos())
+	        	#check if block has been clicked
+	        	block = block_manager.detect_click(pygame.mouse.get_pos())
+	        	#check if menubutton has been clicked. If so its function will instantly be called
+	        	menu_manager.detect_click(pygame.mouse.get_pos())
+	        	if not button == None:
+	        		#delete previous selected block
+	        		if not selected_block == None:
+	        			selected_block.remove()
+	        		#clone clicked button and add it to block_manager
+	        		selected_block = button.clone(block_manager)
+	           
+	            # place down currently selected block on grid
+	        	if not selected_block == None:
+	            	#check if on grid
+	            		if selected_block.grid_x != None:
+	            				#deselect block
+	            				grid.place(selected_block,(selected_block.grid_x,selected_block.grid_y))
+	            				selected_block = None
+	            				
+	            #delete currently placed block
+	        	elif not block == None:
+	        		grid.remove(block)
 
-        elif event.type == pygame.KEYDOWN:
-        	#rotate block
-         	if event.key == pygame.K_r:
-         		if not selected_block == None:
-         			selected_block.rotate()
-         	#put away selected block
-         	if event.key == pygame.K_ESCAPE:
-         		if not selected_block == None:
-         			selected_block.remove()
-         			selected_block = None
+	    elif event.type == pygame.KEYDOWN:
+	    	#rotate block
+	     	if event.key == pygame.K_r:
+	     		if not selected_block == None:
+	     			selected_block.rotate()
+	     	#put away selected block
+	     	if event.key == pygame.K_ESCAPE:
+	     		if not selected_block == None:
+	     			selected_block.remove()
+	     			selected_block = None
 
-    #handle snapping
-    if selected_block is not None:
-            	new_pos = grid.snap(selected_block, pygame.mouse.get_pos())
-    # Clear the window
-    window.fill(WHITE)
+	#handle snapping
+	if selected_block is not None:
+	        	grid.snap(selected_block, pygame.mouse.get_pos())
+	mutex.release()
+	# Clear the window
+	window.fill(WHITE)
 
-    #print grid
-    #grid.print_state()
-    # Draw the grid
-    for x in range(0, WINDOW_HEIGHT, BLOCK_SIZE):
-        pygame.draw.line(window, GRAY, (0, x), (WINDOW_HEIGHT, x))
-        pygame.draw.line(window, GRAY, (x, 0), (x, WINDOW_HEIGHT))
+	#print grid
+	#grid.print_state()
+	# Draw the grid
+	for x in range(0, WINDOW_HEIGHT, BLOCK_SIZE):
+	    pygame.draw.line(window, GRAY, (0, x), (WINDOW_HEIGHT, x))
+	    pygame.draw.line(window, GRAY, (x, 0), (x, WINDOW_HEIGHT))
 
-    # Draw the block selection area
-    pygame.draw.rect(window, GRAY, (WINDOW_HEIGHT, 0, SELECTION_WIDTH, SELECTION_HEIGHT))
+	# Draw the block selection area
+	pygame.draw.rect(window, GRAY, (WINDOW_HEIGHT, 0, SELECTION_WIDTH, SELECTION_HEIGHT))
 
-    # Draw the block buttons in the selection area
-    button_manager.draw()
+	# Draw the block buttons in the selection area
+	button_manager.draw()
 
-    # Draw the other blocks
-    block_manager.draw()
+	# Draw the other blocks
+	block_manager.draw()
 
-    #draw Menu Buttons
-    menu_manager.draw()
-    
-    # Update the display
-    pygame.display.update()
-    #clock.tick(60)
-    clock.tick(60)
+	#draw Menu Buttons
+	menu_manager.draw()
+
+	# Update the display
+	pygame.display.update()
+	clock.tick(60)
+	#clock.tick(60)
 
 # Quit the game
 pygame.quit()
