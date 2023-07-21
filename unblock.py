@@ -22,8 +22,9 @@ class Unblocker:
 		for row in board:
 			for cell in row:
 				hash_string += cell
-		hashes.append(hash(hash_string))
-		return smooth_moves(solve_shortest([board, empty_move]))
+		self.hashes.append(hash(hash_string))
+		empty_move = []
+		return self.smooth_moves(self.solve_shortest([board, empty_move]))
 
 	def print_state(self,state):
 		#prints a game state for debugging purposes		
@@ -35,7 +36,7 @@ class Unblocker:
 				print(line) 
 		print("---------------")
 
-		empty_move = []
+		
 
 	#breadth first search version for shortest solve
 	def solve_shortest(self, b):
@@ -49,7 +50,7 @@ class Unblocker:
 			self.print_state(state)
 			move_list = copy.deepcopy(curr[1])
 			if state[2][5] == "R" and state[2][4] == "R":
-				print("After examining " + str(i) + " game states the game was solved in") 
+				#print("After examining " + str(i) + " game states the game was solved in") 
 				return move_list
 			new_states = self.gen_states(state)
 			for item in new_states:
@@ -234,7 +235,7 @@ class Unblocker:
 					new_move = m[i-1][0:10] + m[i][10:14]
 					m.pop(i)
 					i = i-1
-					m[i] = new_movex
+					m[i] = new_move
 			i += 1 
 		return m
 

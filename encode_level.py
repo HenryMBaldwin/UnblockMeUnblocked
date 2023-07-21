@@ -57,7 +57,10 @@ class Grid:
 		self.red = False
 
 	def solve(self):
-		self.unblocker.solve_board(self.grid)
+		sol = self.unblocker.solve_board(self.grid)
+		print(str(len(sol))+" moves")
+		for move in sol:
+			print(move)
 
 	#checks if red block is present
 	def check_red(self):
@@ -329,7 +332,7 @@ class Block_Manager:
 		return None
 
 class Menu_Manager(Block_Manager):
-	def detect_click(self, mous_pos):
+	def detect_click(self, mouse_pos):
 		for block in self.block_arr:
 			if block.rect.collidepoint(mouse_pos):
 				block.click()
@@ -338,14 +341,17 @@ class Menu_Button:
 	def __init__(self,x,y, text, manager, func):
 		self.x = x
 		self.y = y
+
 		self.manager = manager
+		self.manager.add(self)
+
 		self.func = func
 		self.width = 60
 		self.height = 20
 		self.primary_color = (255, 255, 255)
 		self.press_color = (174, 180, 245)
 		self.font_color = (0,0,0)
-		self.font = pygame.font.SysFont('Corbel',35)
+		self.font = pygame.font.SysFont('Corbel',25)
 		self.text = self.font.render(text, True, self.font_color)
 
 		self.rect = pygame.draw.rect(window, self.primary_color, (self.x, self.y, self.width, self.height))
@@ -356,7 +362,7 @@ class Menu_Button:
 		window.blit(self.text, (self.x, self.y))
 
 	def click(self, args = None):
-		pass
+		self.func()
 
 
 
