@@ -52,20 +52,54 @@ class Grid:
 		 [".", ".", ".", ".",".","."]]
 		
 		self.unblocker = unblock.Unblocker()
-		self.manager 
+		self.manager = manager
+		#keeps track of whether red block is placed
+		self.red = False
 
 
+	#checks if red block is present
+	def check_red(self):
+		for y in self.grid:
+			for x in y:
+				if x == "R":
+					self.red = True
 	#decodes grid and places it on gameboard
-	def decode(self):
+	def decode(self, button_manager):
+
+		encodings = {
+		"R":"RED",
+		"A":"BROWN",
+		"B":"LONG_BROWN"}
+
+		#need button manager for block
+		buttons = button_manager
 		#clear visual grid
 		self.remove_all_visual()
 
 		for y in range(len(self.grid)):
 			for x in range(len(y)):
-				if self.get_grid_pos(x,y) != ".":
+				curr = self.get_grid_pos(x,y)
+				if curr != ".":
+					#current block
+					selected_block = None
+
 					#get side from unblocker
 					side = self.unblocker.get_gridside(y,x,self.grid)
-		
+					#only place blocks from top or left
+					if side == "t" or side == "l":
+						coords = self.reverse_resolve(x,y)
+						for block in buttons.block_arr:
+							if block.block_type[2] == encodings[curr.upper()]:
+								selected_block = block.clone(self.block_manager)
+
+
+						if not curr.isupper():
+							selected_block.rotate()
+
+						self.snap(selected_block,coords)
+						self.place(selected_block,(selected_block.grid_x,selected_block.grid_y))
+
+
 	#sets internal grid
 	#dangerous: desyncs visual grid from internal
 	def set_grid(self,grid):
@@ -96,6 +130,10 @@ class Grid:
 			return None
 		return (int(x/100),int(y/100))
 
+
+	#resolves real coords from grid coords
+	def reverse_resolve(self, x, y):
+		return(x*100, y *100)
 
 	#checks if closest position is free for specific block	 
 	def check_pos(self, block, pos):
@@ -179,6 +217,8 @@ class Grid:
 			else:
 				self.update_grid_pos(grid_x+i, grid_y, code_char) 
 
+		self.check_red()
+
 	def remove(self,block):
 		grid_x = block.grid_x
 		grid_y = block.grid_y
@@ -191,17 +231,19 @@ class Grid:
 
 		block.manager.remove(block)
 
+		self.check_red()
+
 	#cleans board both in visual and internal grid
 	def remove_all(self):
 		for block in self.manager.block_arr:
-			if block.grid_x != None
+			if block.grid_x != None:
 				self.remove(block)
 
 	#remove all block objects but does not clean board.
 	#Dangerous, desyncs board from internal grid
 	def remove_all_visual():
 		for block in self.manager.block_arr:
-			if block.grid_x != None
+			if block.grid_x != None:
 				block.remove()
 
 #Block class to allow for easier collision detection
@@ -255,7 +297,6 @@ class Block:
 
 	#for custom buttons
 	#def write(self, manager)
-	
 
 #Keep track of blocks to draw them every frame
 class Block_Manager:
@@ -284,6 +325,10 @@ class Block_Manager:
 			if block.rect.collidepoint(mouse_pos):
 				return block
 		return None
+
+
+#Create Menu Manager
+menu_manager = Block_Manager()
 
 #Create Block Manager
 block_manager = Block_Manager()

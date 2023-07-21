@@ -8,7 +8,7 @@ class Unblocker:
 		for move in sol:
 			print(move)
 
-	#going to use a depth first search because it makes recording the path much easier, though a breadth first search would definitely be more effecient 
+	#
 	def solve_board(self, board):
 		#stores hashed already visited game states
 		self.hashes = []
@@ -23,6 +23,7 @@ class Unblocker:
 			for cell in row:
 				hash_string += cell
 		hashes.append(hash(hash_string))
+		return smooth_moves(solve_shortest([board, empty_move]))
 
 	def print_state(self,state):
 		#prints a game state for debugging purposes		
@@ -35,7 +36,6 @@ class Unblocker:
 		print("---------------")
 
 		empty_move = []
-		return smooth_moves(solve_shortest([board, empty_move]))
 
 	#breadth first search version for shortest solve
 	def solve_shortest(self, b):
