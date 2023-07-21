@@ -292,6 +292,9 @@ class Block:
 			
 	def draw(self):
 		self.rect = pygame.draw.rect(window, self.block_type[1], (self.x, self.y, self.width, self.height))
+		#draw border
+		for i in range(4):
+			pygame.draw.rect(window, (0, 0, 0), (self.x,self.y,self.width,self.height), 1)
 
 	def remove(self):
 		self.manager.remove(self)
@@ -338,7 +341,7 @@ class Menu_Manager(Block_Manager):
 				block.click()
 	
 class Menu_Button:
-	def __init__(self,x,y, text, manager, func):
+	def __init__(self,x,y, text, text_x, manager, func):
 		self.x = x
 		self.y = y
 
@@ -351,15 +354,19 @@ class Menu_Button:
 		self.primary_color = (255, 255, 255)
 		self.press_color = (174, 180, 245)
 		self.font_color = (0,0,0)
-		self.font = pygame.font.SysFont('Corbel',25)
+		self.font = pygame.font.SysFont('Corbel',22)
 		self.text = self.font.render(text, True, self.font_color)
-
-		self.rect = pygame.draw.rect(window, self.primary_color, (self.x, self.y, self.width, self.height))
-		window.blit(self.text, (self.x, self.y))
+		self.text_box = self.text.get_rect()
+		self.rect = None
 
 	def draw(self):
+		
+
 		self.rect = pygame.draw.rect(window, self.primary_color, (self.x, self.y, self.width, self.height))
-		window.blit(self.text, (self.x, self.y))
+		window.blit(self.text, (self.x+((self.width - self.text_box.width)/2), self.y))
+		#draw border
+		for i in range(4):
+			pygame.draw.rect(window, (0, 0, 0), (self.x,self.y,self.width,self.height), 1)
 
 	def click(self, args = None):
 		self.func()
@@ -408,7 +415,7 @@ menu_button_x = WINDOW_WIDTH - 80
 menu_button_y = 50
 
 #solve button
-Menu_Button(menu_button_x,menu_button_y, "Solve", menu_manager, grid.solve)
+Menu_Button(menu_button_x,menu_button_y, "Solve", 10, menu_manager, grid.solve)
 
 # Track the currently selected block
 selected_block = None
