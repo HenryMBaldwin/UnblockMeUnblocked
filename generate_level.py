@@ -28,6 +28,7 @@ class Generator:
 		}
 
 		self.block_info = {
+			"R":"red",
 			"A":"hori_short",
 			"a":"vert_short",
 			"B":"hori_long",
@@ -58,12 +59,16 @@ class Generator:
 
 		
 	#handles block placement - returns true if block is placed successfully
+	#some block placing rules for better solvability:
+	# - no horizontal blocks on row 2
 	def place_block(self,block, r, c):
 
+		print("Attempting to place "  + self.block_info[block] + " at ("+str(r)+","+str(c)+")") 
 		grid = self.grid
 		ret = False
 		if r < 0 or c < 0 or r > 5 or c >5:
 			return False
+
 
 		match block:
 			case "R":
@@ -73,24 +78,24 @@ class Generator:
 					ret = True
 				#move straight to "A" code to avoid repition 
 			case "A":
-				if not (grid[r][c] != "." or grid[r][c+1] != "." or c == 5):
+				if not (c == 5 or r == 2 or grid[r][c] != "." or grid[r][c+1] != "."):
 					grid[r][c] = block
 					grid[r][c+1] =  block
 					ret = True
 				
 			case "a":
-				if not (grid[r][c] != "." or grid[r+1][c] != "." or r == 5):
+				if not (r == 5 or grid[r][c] != "." or grid[r+1][c] != "."):
 					grid[r][c] = block
 					grid[r+1][c] =  block
 					ret = True
 			case "B":
-				if not (grid[r][c] != "." or grid[r][c+1] != "." or grid[r][c+2] != "." or c > 3):
+				if not (c > 3 or r == 2 or grid[r][c] != "." or grid[r][c+1] != "." or grid[r][c+2] != "."):
 					grid[r][c] = block
 					grid[r][c+1] =  block
 					grid[r][c+2] =  block
 					ret = True
 			case "b":
-				if not (grid[r][c] != "." or grid[r+1][c] != "." or grid[r+2][c] != "." or r > 3):
+				if not (r > 3 or grid[r][c] != "." or grid[r+1][c] != "." or grid[r+2][c] != "." ):
 					grid[r][c] = block
 					grid[r+1][c] =  block
 					grid[r+2][c] =  block
@@ -131,28 +136,28 @@ class Generator:
 			match block_type_int:
 				case 0:
 					block = "A"
-					break
+					
 				case 1:
 					block = "a"
-					break
+					
 				case 2:
 					block = "B"
-					break
+					
 				case 3: 
 					block = "b"
-					break
+					
 
 			#try to place block at random coordinates 1000 times, if block cannot be placed, move on
 			#this is a very inefficient way to do this, oh well, if its significantly delaying the program I'll change it I guess
 			for i in range(1000):
 				#pick coordinates
-				r = randint(0,5)
-				c = randint(0,5)
+				r = random.randint(0,5)
+				c = random.randint(0,5)
 
 				if self.place_block(block, r, c):
 					#if block was succesfully placed add it to meta data
 					self.grid_data["num_blocks"] += 1
-					self.grid_data[block_info[block]] += 1
+					self.grid_data[self.block_info[block]] += 1
 					break
 
 		#add grid to metadata
