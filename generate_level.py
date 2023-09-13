@@ -63,7 +63,7 @@ class Generator:
 	# - no horizontal blocks on row 2
 	def place_block(self,block, r, c):
 
-		print("Attempting to place "  + self.block_info[block] + " at ("+str(r)+","+str(c)+")") 
+		#print("Attempting to place "  + self.block_info[block] + " at ("+str(r)+","+str(c)+")") 
 		grid = self.grid
 		ret = False
 		if r < 0 or c < 0 or r > 5 or c >5:
