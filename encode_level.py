@@ -2,6 +2,7 @@ import pygame
 import math
 import copy
 import unblock
+import generate_level
 from pygame.locals import *
 from threading import Thread, Lock
 import json
@@ -56,7 +57,10 @@ class Grid:
 		 [".", ".", ".", ".",".","."],
 		 [".", ".", ".", ".",".","."]]
 		
+		#other classes
+		self.generator = generate_level.Generator()
 		self.unblocker = unblock.Unblocker()
+		
 		self.manager = manager
 		self.button_manager = button_manager
 		self.mutex = mutex
@@ -283,6 +287,11 @@ class Grid:
 				self.grid = temp
 				self.decode()
 
+	def generate_level(self):
+		level = self.generator.generate_level()
+		self.grid = level
+		self.decode()
+
 #Block class to allow for easier collision detection
 class Block:
 
@@ -457,6 +466,8 @@ menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Save",10,menu_manager, grid.save_to_json)
 menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Load",10,menu_manager, grid.load_from_json)
+menu_button_y = menu_button_y+25
+Menu_Button(menu_button_x, menu_button_y, "Rand",10, menu_manager, grid.generate_level)
 # Track the currently selected block
 selected_block = None
 

@@ -6,7 +6,7 @@ import random
 #based purely on encoded form of the grid
 class Generator:
 
-	def __init__():
+	def __init__(self):
 		#empty grid
 		self.grid = [[".", ".", ".", ".",".","."],
 		 [".", ".", ".", ".",".","."],
@@ -22,20 +22,20 @@ class Generator:
 			"vert_short":0,
 			"vert_long":0,
 			"hori_short":0,
-			"hori_long":0
-			"moves_to_solve":0
-			"solvable":false
+			"hori_long":0,
+			"moves_to_solve":0,
+			"solvable":False
 		}
 
-		self.block_info{
-			"A":"hori_short"
-			"a":"vert_short"
-			"B":"hori_long"
+		self.block_info = {
+			"A":"hori_short",
+			"a":"vert_short",
+			"B":"hori_long",
 			"b":"vert_long"
 		}
 
 
-	def reset():
+	def reset(self):
 
 		self.grid = [[".", ".", ".", ".",".","."],
 		 [".", ".", ".", ".",".","."],
@@ -51,14 +51,14 @@ class Generator:
 			"vert_short":0,
 			"vert_long":0,
 			"hori_short":0,
-			"hori_long":0
-			"moves_to_solve":0
-			"solvable":false
+			"hori_long":0,
+			"moves_to_solve":0,
+			"solvable":False
 		}
 
 		
 	#handles block placement - returns true if block is placed successfully
-	def place_block(block, r, c):
+	def place_block(self,block, r, c):
 
 		grid = self.grid
 		ret = False
@@ -67,41 +67,34 @@ class Generator:
 
 		match block:
 			case "R":
-				if r != 3 or c > 3:
-					break
+				if not (r != 2 or c > 3):
+					grid[r][c] = block
+					grid[r][c+1] =  block
+					ret = True
 				#move straight to "A" code to avoid repition 
 			case "A":
-				if grid[r][c] != "." or grid[r][c+1] != "." or c == 5
-					break
-				grid[r][c] = block
-				grid[r][c+1] =  block
-				ret = True
-				break
+				if not (grid[r][c] != "." or grid[r][c+1] != "." or c == 5):
+					grid[r][c] = block
+					grid[r][c+1] =  block
+					ret = True
+				
 			case "a":
-				if grid[r][c] != "." or grid[r+1][c] != "." or r == 5
-					break
-				grid[r][c] = block
-				grid[r+1][c] =  block
-				ret = True
-				break
+				if not (grid[r][c] != "." or grid[r+1][c] != "." or r == 5):
+					grid[r][c] = block
+					grid[r+1][c] =  block
+					ret = True
 			case "B":
-				if grid[r][c] != "." or grid[r][c+1] != "." or grid[r][c+2] != "." or c > 3
-					break
-				grid[r][c] = block
-				grid[r][c+1] =  block
-				grid[r][c+2] =  block
-				ret = True
-				break
-
+				if not (grid[r][c] != "." or grid[r][c+1] != "." or grid[r][c+2] != "." or c > 3):
+					grid[r][c] = block
+					grid[r][c+1] =  block
+					grid[r][c+2] =  block
+					ret = True
 			case "b":
-				if grid[r][c] != "." or grid[r+1][c] != "." or grid[r+2][c] != "." or r > 3
-					break
-				grid[r][c] = block
-				grid[r+1][c] =  block
-				grid[r+2][c] =  block
-				ret = True
-				break
-
+				if not (grid[r][c] != "." or grid[r+1][c] != "." or grid[r+2][c] != "." or r > 3):
+					grid[r][c] = block
+					grid[r+1][c] =  block
+					grid[r+2][c] =  block
+					ret = True
 		self.grid = grid
 		return ret
 
@@ -114,15 +107,15 @@ class Generator:
 				line += "]"
 
 	#generates random level
-	def generate_level()
+	def generate_level(self):
 
 		#reset
-		reset()
+		self.reset()
 
 		#place red block
 
 		red_block_col = random.randint(0,3)
-		place_block("R", 3, red)
+		self.place_block("R", 2, red_block_col)
 
 		self.grid_data["red_block_col"] = red_block_col
 		#choose number of brown blocks between 4 and 13
@@ -132,10 +125,10 @@ class Generator:
 		for i in range(0, num_blocks+1):
 			#pick block, currently weighted 50/50 short/long and vertical/horizantal, meaning a quarter chance for every block type
 			#these may be altered in the future to more consistantly produce solvable levels based on statistics harvested from generated levels
-			block_type_int = randint(0,3)
+			block_type_int = random.randint(0,3)
 
 			block = ""
-			switch block_type_int:
+			match block_type_int:
 				case 0:
 					block = "A"
 					break
@@ -156,7 +149,7 @@ class Generator:
 				r = randint(0,5)
 				c = randint(0,5)
 
-				if place_block(block, r, c):
+				if self.place_block(block, r, c):
 					#if block was succesfully placed add it to meta data
 					self.grid_data["num_blocks"] += 1
 					self.grid_data[block_info[block]] += 1
@@ -165,3 +158,5 @@ class Generator:
 		#add grid to metadata
 
 		self.grid_data["grid"] = self.grid
+
+		return self.grid
