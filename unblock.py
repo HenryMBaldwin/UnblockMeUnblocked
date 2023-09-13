@@ -9,7 +9,7 @@ class Unblocker:
 			print(move)
 
 	#Entry point into Unblocker
-	def solve_board(self, board, mutex, grid):
+	def solve_board(self, board, mutex, grid, smooth = True):
 		#mutex
 		self.mutex = mutex
 		#used to pass current state back and forth
@@ -28,7 +28,11 @@ class Unblocker:
 				hash_string += cell
 		self.hashes.append(hash(hash_string))
 		empty_move = []
-		return self.smooth_moves(self.solve_shortest([board, empty_move]))
+
+		if smooth:
+			return self.smooth_moves(self.solve_shortest([board, empty_move]))
+		else:
+			return self.solve_shortest([board,empty_move])
 
 	def print_state(self,state):
 		self.mutex.acquire()
@@ -43,6 +47,7 @@ class Unblocker:
 		#		print(line) 
 		#print("---------------")
 		self.mutex.release()
+		
 	#breadth first search version for shortest solve
 	def solve_shortest(self, b):
 		self.queue.append(b)

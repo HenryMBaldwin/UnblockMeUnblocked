@@ -24,7 +24,8 @@ class Generator:
 			"hori_short":0,
 			"hori_long":0,
 			"moves_to_solve":0,
-			"solvable":False
+			"solvable":False,
+			"solution":[]
 		}
 
 		self.block_info = {
@@ -54,7 +55,8 @@ class Generator:
 			"hori_short":0,
 			"hori_long":0,
 			"moves_to_solve":0,
-			"solvable":False
+			"solvable":False,
+			"solution":[]
 		}
 
 		
