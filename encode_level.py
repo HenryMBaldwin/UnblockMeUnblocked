@@ -481,7 +481,7 @@ while running:
 		grid.decode()
 		grid.check_solve()
    
-	grid.print_state()
+	###grid.print_state()
 	# Process events
 	for event in pygame.event.get():
 	    if event.type == pygame.QUIT:
