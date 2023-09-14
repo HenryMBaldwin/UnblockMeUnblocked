@@ -166,4 +166,4 @@ class Generator:
 
 		self.grid_data["grid"] = self.grid
 
-		return self.grid
+		return self.grid_data
