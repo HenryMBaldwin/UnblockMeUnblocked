@@ -1,4 +1,5 @@
 import copy
+from threading import Lock
 #empty board array
 
 class Unblocker:
@@ -9,7 +10,7 @@ class Unblocker:
 			print(move)
 
 	#Entry point into Unblocker
-	def solve_board(self, board, mutex, grid, smooth = True):
+	def solve_board(self, board, mutex = Lock(), grid, smooth = True):
 		#mutex
 		self.mutex = mutex
 		#used to pass current state back and forth
