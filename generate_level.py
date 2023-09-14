@@ -125,9 +125,9 @@ class Generator:
 		self.place_block("R", 2, red_block_col)
 
 		self.grid_data["red_block_col"] = red_block_col
-		#choose number of brown blocks between 4 and 13
+		#choose number of brown blocks between 5 and 13
 		#this number range is largely arbitrary based on a cursory examination of a few unblock me levels
-		num_blocks = random.randint(4,13)
+		num_blocks = random.randint(5,13)
 
 		for i in range(0, num_blocks+1):
 			#pick block, currently weighted 50/50 short/long and vertical/horizantal, meaning a quarter chance for every block type
