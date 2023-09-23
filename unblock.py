@@ -10,9 +10,12 @@ class Unblocker:
 			print(move)
 
 	#Entry point into Unblocker
-	def solve_board(self, board, mutex = Lock(), grid, smooth = True):
+	def solve_board(self, board, mutex = None, grid = None, smooth = True):
 		#mutex
-		self.mutex = mutex
+		if mutex == None:
+			self.mutex = Lock()
+		else:
+			self.mutex = mutex
 		#used to pass current state back and forth
 		self.grid = grid
 		#stores hashed already visited game states
@@ -37,7 +40,7 @@ class Unblocker:
 
 	def print_state(self,state):
 		self.mutex.acquire()
-		self.grid.grid = state
+		#self.grid.grid = state
 		
 		#prints a game state for debugging purposes		
 		for row in state:
