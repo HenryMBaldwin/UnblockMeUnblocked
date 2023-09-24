@@ -70,6 +70,7 @@ class Grid:
 		self.sol = None
 
 	def solve(self):
+		#print("solve")
 		self.sol = Thread(target = self.unblocker.solve_board,args = (self.grid, self.mutex, self))
 		self.solving = True
 		self.sol.start()
@@ -78,8 +79,8 @@ class Grid:
 		#	print(move)
 
 	def check_solve(self):
+		#print("Checking solver")
 		if not self.sol.is_alive():
-
 			self.solving = False
 
 	#checks if red block is present
@@ -88,8 +89,10 @@ class Grid:
 			for x in y:
 				if x == "R":
 					self.red = True
+
 	#decodes grid and places it on gameboard
 	def decode(self):
+		#self.print_state()
 		#self.mutex.acquire()
 		#print("decoding")
 		encodings = {
@@ -289,7 +292,7 @@ class Grid:
 
 	def generate_level(self):
 		level = self.generator.generate_level()
-		self.grid = level
+		self.grid = level["grid"]
 		self.decode()
 
 #Block class to allow for easier collision detection
