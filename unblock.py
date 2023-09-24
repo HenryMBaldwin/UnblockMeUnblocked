@@ -40,7 +40,8 @@ class Unblocker:
 
 	def print_state(self,state):
 		self.mutex.acquire()
-		#self.grid.grid = state
+		if self.grid != None:
+			self.grid.grid = state
 		
 		#prints a game state for debugging purposes		
 		for row in state:
@@ -54,6 +55,7 @@ class Unblocker:
 		
 	#breadth first search version for shortest solve
 	def solve_shortest(self, b):
+		#print("Solve Shortest")
 		self.queue.append(b)
 		i = 0
 		while len(self.queue) != 0:
