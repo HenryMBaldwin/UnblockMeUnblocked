@@ -168,32 +168,25 @@ class Level_Factory:
         self.ld_mutex.release()
 
     def save_training_data(self, state, move, filename="levels/training_data.json"):
+        if isinstance(state, np.ndarray):
+            state = state.tolist()
+        if isinstance(move, np.ndarray):
+            move = move.tolist()
             
-            # Convert Numpy arrays to Python lists
-            if isinstance(state, np.ndarray):
-                state = state.tolist()
+        try:
+            with open(filename, 'r') as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            data = []
             
-            if isinstance(move, np.ndarray):
-                move = move.tolist()
-                
-            # Try to load existing data
-            try:
-                with open(filename, 'r') as f:
-                    data = json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
-                # If file does not exist or is empty/invalid, initialize data
-                data = {
-                    "states": [],
-                    "moves": []
-                }
-                
-            # Append new data
-            data["states"].append(state)
-            data["moves"].append(move)
+        data.append({
+            "state": state,
+            "move": move
+        })
             
-            # Write updated data back to file
-            with open(filename, 'w') as f:
-                json.dump(data, f)
+        with open(filename, 'w') as f:
+            json.dump(data, f, indent = 4)
+
 
     def generate_levels_parallel(self, num_processes, num, solvable=True):
         num = num//num_processes
