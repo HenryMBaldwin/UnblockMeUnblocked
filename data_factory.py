@@ -42,8 +42,7 @@ class Level_Factory:
     	#not exactly sure if this is necassary but it is a fairly simple precaution to implement
     	self.gen_mutex = gen_mutex
     	self.gs_mutex = gs_mutex
-    	self.ld_mutex = ld_mutex
-    	print(gs_mutex)
+    	self.ld_mutex = ld_(gs_mutex)
     	self.generate_levels(num, solvable)
 
     def generate_levels(self, num, solvable=True):
