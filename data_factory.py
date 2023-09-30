@@ -4,20 +4,21 @@ import time
 import generate_level
 import unblock
 import multiprocessing as mp
-from threading import Lock
+from multiprocessing import Lock
 class Level_Factory:
 
     def __init__(self):
         self.generator = generate_level.Generator()
         self.unblocker = unblock.Unblocker()
-        self.unique_states_file = "levels/unique_game_states.txt"  # Set the file path to the levels folder
-        self.unique_game_states = self.load_unique_game_states()  # Initialize the set by loading from the file
         self.gen_mutex = Lock() #mutex used in level generation
         self.gs_mutex = Lock()	#mutex used in game state reading and writing
         self.ld_mutex = Lock()	#mutex used in level data reading and writing
+        self.unique_states_file = "levels/unique_game_states.txt"  # Set the file path to the levels folder
+        self.unique_game_states = self.load_unique_game_states()  # Initialize the set by loading from the file
+        
 
     def load_unique_game_states(self):
-    	self.gs_mutex.acquire()
+        self.gs_mutex.acquire()
         unique_states = set()
         if os.path.exists(self.unique_states_file):
             with open(self.unique_states_file, "r") as file:
@@ -28,19 +29,20 @@ class Level_Factory:
         
 
     def save_unique_game_states(self):
-    	self.gs_mutex.acquire()
+        self.gs_mutex.acquire()
         with open(self.unique_states_file, "w") as states_file:
             for state_str in self.unique_game_states:
                 states_file.write(state_str + "\n")
         self.gs_mutex.release()
 
-    def parallel_handler(self, num, solvable = True, gen_mutex, gs_mutex, ld_mutex):
+    def parallel_handler(self, gen_mutex, gs_mutex, ld_mutex, num, solvable = True):
     	#ensuring mutexes are the same between parallel processes
     	#not exactly sure if this is necassary but it is a fairly simple precaution to implement
     	self.gen_mutex = gen_mutex
     	self.gs_mutex = gs_mutex
     	self.ld_mutex = ld_mutex
-    	generate_levels(num, solvable)
+    	print(gs_mutex)
+    	self.generate_levels(num, solvable)
 
     def generate_levels(self, num, solvable=True):
         for i in range(num):
@@ -54,13 +56,13 @@ class Level_Factory:
               
 
                 if state_str not in self.unique_game_states:
-                	# Add to the set and save if unique
-                	self.unique_game_states.add(state_str)
-	                self.save_unique_game_states()
-	                self.gen_mutex.release()
+                    # Add to the set and save if unique
+                    self.unique_game_states.add(state_str)
+                    self.save_unique_game_states()
+                    self.gen_mutex.release()
 
                     solution = self.unblocker.solve_board(board=grid, smooth=False)
-
+                    
                     grid_data["solution"] = solution
                     if len(solution) != 0 and solvable:
                         print("Level " + str(i))
@@ -70,21 +72,21 @@ class Level_Factory:
                         grid_data["solvable"] = True
                         grid_data["moves_to_solve"] = len(solution)
                         self.save_level(grid_data)
-	                    break
+                        break
 
-	                elif not solvable:
-	                	grid_data["solvable"] = False
+                    elif not solvable:
+                        grid_data["solvable"] = False
                         grid_data["moves_to_solve"] = -1
                         self.save_level(grid_data)
-	                    break
-	            else:
-	            	#make sure to release mutex even if not unique
-	            	self.gen_mutex.release()
+                        break
+                else:
+                    #make sure to release mutex even if not unique
+                    self.gen_mutex.release()
 
                 
 
     def save_level(self, level_data, filename="levels/level_data.json"):
-    	self.ld_mutex.acquire()
+        self.ld_mutex.acquire()
         if os.path.exists(filename):
             with open(filename, "r") as file:
                 existing_data = json.load(file)
@@ -98,11 +100,12 @@ class Level_Factory:
         self.ld_mutex.release()
 
     def generate_levels_parallel(self, num_processes, num, solvable=True):
+        num = num//num_processes
         gen_mutex = self.gen_mutex
         gs_mutex = self.gs_mutex
         ld_mutex = self.ld_mutex
-        
-        input_data = [(num, solvable, gen_mutex, gs_mutex, ld_mutex)] * num_processes
+
+        input_data = [(num, solvable)] * num_processes
 
         with mp.Pool(processes=num_processes) as pool:
             pool.starmap(self.parallel_handler, input_data)
@@ -110,7 +113,7 @@ class Level_Factory:
 lfactory = Level_Factory()
 
 st = time.time()
-lfactory.generate_levels(1000, True)
+lfactory.generate_levels_parallel(10, 1000, True)
 et = time.time()
 
 print(str(et - st))

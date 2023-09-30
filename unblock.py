@@ -10,7 +10,13 @@ class Unblocker:
 			print(move)
 
 	#Entry point into Unblocker
-	def solve_board(self, board, mutex = None, grid = None, smooth = True):
+	#lots of default perameters due to the fact that this module is used all over the place in a lot of different ways
+	#mutex to prevent parallel printing
+	#grid to tap into grid UI and show solving live
+	#smooth to slightly optimize moves by combining them for human readability
+	#training to return [state,move] pairs for generating training data
+
+	def solve_board(self, board, mutex = None, grid = None, smooth = True, training = False):
 		#mutex
 		if mutex == None:
 			self.mutex = Lock()
@@ -33,10 +39,13 @@ class Unblocker:
 		self.hashes.append(hash(hash_string))
 		empty_move = []
 
-		if smooth:
-			return self.smooth_moves(self.solve_shortest([board, empty_move]))
-		else:
+		if training:
 			return self.solve_shortest([board,empty_move])
+		else:
+			if smooth:
+				return self.smooth_moves(self.solve_shortest([board, empty_move])[1])
+			else:
+				return self.solve_shortest([board,empty_move])[1]
 
 	def print_state(self,state):
 		self.mutex.acquire()
@@ -64,14 +73,20 @@ class Unblocker:
 			state = curr[0]
 			#print("Checking State")
 			self.print_state(state)
-			move_list = copy.deepcopy(curr[1])
+			#store both state and move in move list for training data
+			#recall, this is the state and the move that **led** to that state, not the state and the best move from that state.
+			move_m = copy.deepcopy(curr[1])
+			move_s = copy.deepcopy(curr[0])
+			move_list = [move_s, move_m]
+			#check for win condition
 			if state[2][5] == "R" and state[2][4] == "R":
 				#print("After examining " + str(i) + " game states the game was solved in") 
 				return move_list
 			new_states = self.gen_states(state)
 			for item in new_states:
-				move_list.append(item[1])
+				move_list.append([item[0],item[1]])
 				temp_move = copy.deepcopy(move_list)
+				#wow already doing this in the queue, not sure why I didn't do this in the move list to begin with
 				self.queue.append([item[0], temp_move])
 				move_list.pop()
 		return []
