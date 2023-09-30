@@ -41,6 +41,7 @@ class Unblocker:
 
 		if training:
 			return self.solve_shortest([board,empty_move])
+		
 		else:
 			if smooth:
 				return self.smooth_moves(self.solve_shortest([board, empty_move])[1])
@@ -72,19 +73,20 @@ class Unblocker:
 			curr = self.queue.pop(0)
 			state = curr[0]
 			#print("Checking State")
-			self.print_state(state)
-			#store both state and move in move list for training data
-			#recall, this is the state and the move that **led** to that state, not the state and the best move from that state.
-			move_m = copy.deepcopy(curr[1])
-			move_s = copy.deepcopy(curr[0])
-			move_list = [move_s, move_m]
+			#self.print_state(state)
+
+			move_list = copy.deepcopy(curr[1])
 			#check for win condition
 			if state[2][5] == "R" and state[2][4] == "R":
 				#print("After examining " + str(i) + " game states the game was solved in") 
 				return move_list
+
 			new_states = self.gen_states(state)
 			for item in new_states:
-				move_list.append([item[0],item[1]])
+				move_arr = []
+				move_arr.append(item[0])
+				move_arr.append(item[1])
+				move_list.append(move_arr)
 				temp_move = copy.deepcopy(move_list)
 				#wow already doing this in the queue, not sure why I didn't do this in the move list to begin with
 				self.queue.append([item[0], temp_move])

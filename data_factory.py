@@ -18,7 +18,6 @@ class Level_Factory:
         self.ld_mutex = Lock()	#mutex used in level data reading and writing
         self.unique_states_file = "levels/unique_game_states.txt"  # Set the file path to the levels folder
         self.unique_game_states = self.load_unique_game_states()  # Initialize the set by loading from the file
-        
 
     def load_unique_game_states(self):
         self.gs_mutex.acquire()
@@ -55,7 +54,7 @@ class Level_Factory:
                 state_str = ''.join(''.join(row) for row in grid)
                 
                 self.gen_mutex.acquire()
-                self.unique_game_states = load_unique_game_states()
+                self.unique_game_states = self.load_unique_game_states()
               
 
                 if state_str not in self.unique_game_states:
@@ -67,23 +66,24 @@ class Level_Factory:
                     solution = self.unblocker.solve_board(board=grid, smooth=False, training = True)
 
 
-
                     grid_data["solution"] = solution
                     if len(solution) != 0 and solvable:
                         print("Level " + str(i))
                         for move in solution:
-                            print(move)
+                            print(move[1])
 
                         grid_data["solvable"] = True
                         grid_data["moves_to_solve"] = len(solution)
                         self.save_level(grid_data)
 
                         last_state = None
-                        for state, move in solution:
+                        for sol_set in solution:
+                            state = sol_set[0]
+                            move = sol_set[1]
                             if last_state != None:
                                 #convert the last state to a one hot
-                                one_hot_state = convert_to_one_hot(last_state)
-                                norm_move = convert_to_normalized(move)
+                                one_hot_state = self.convert_to_one_hot(last_state)
+                                norm_move = self.convert_to_normalized(move)
                                 #save current move and last state, as each [state, move] pair is the current state and the move
                                 #that **led** to the current state
                                 save_training_data(one_hot_state.flatten(), norm_move)
@@ -122,6 +122,8 @@ class Level_Factory:
         return coord_array
 
     def convert_to_one_hot(self, state):
+
+        #self.unblocker.print_state(state)
         # Define a mapping from character to one-hot encoding
         char_to_one_hot = {
             ".": [1, 0, 0, 0, 0, 0],
@@ -166,18 +168,18 @@ class Level_Factory:
         self.ld_mutex.release()
 
     def save_training_data(self, state, move, filename="levels/training_data.json"):
-    if not (isinstance(state, list) and isinstance(move, list)):
-        raise ValueError("Inputs should be of type list")
-        
-        # Storing arrays in a dictionary
-        data = {
-            "state": state,
-            "move": move
-        }
-        
-        # Writing the dictionary to a JSON file
-        with open(filename, 'w') as f:
-            json.dump(data, f)
+        if not (isinstance(state, list) and isinstance(move, list)):
+            raise ValueError("Inputs should be of type list")
+            
+            # Storing arrays in a dictionary
+            data = {
+                "state": state,
+                "move": move
+            }
+            
+            # Writing the dictionary to a JSON file
+            with open(filename, 'w') as f:
+                json.dump(data, f)
 
     def generate_levels_parallel(self, num_processes, num, solvable=True):
         num = num//num_processes
@@ -193,7 +195,7 @@ class Level_Factory:
 lfactory = Level_Factory()
 
 st = time.time()
-lfactory.generate_levels_parallel(10, 1000, True)
+lfactory.generate_levels(2000, True)
 et = time.time()
 
 print(str(et - st))
