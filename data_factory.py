@@ -4,7 +4,10 @@ import time
 import generate_level
 import unblock
 import multiprocessing as mp
+import numpy as np
+import re
 from multiprocessing import Lock
+
 class Level_Factory:
 
     def __init__(self):
@@ -61,8 +64,10 @@ class Level_Factory:
                     self.save_unique_game_states()
                     self.gen_mutex.release()
 
-                    solution = self.unblocker.solve_board(board=grid, smooth=False)
-                    
+                    solution = self.unblocker.solve_board(board=grid, smooth=False, training = True)
+
+
+
                     grid_data["solution"] = solution
                     if len(solution) != 0 and solvable:
                         print("Level " + str(i))
@@ -72,6 +77,17 @@ class Level_Factory:
                         grid_data["solvable"] = True
                         grid_data["moves_to_solve"] = len(solution)
                         self.save_level(grid_data)
+
+                        last_state = None
+                        for state, move in solution:
+                            if last_state != None:
+                                #convert the last state to a one hot
+                                one_hot_state = convert_to_one_hot(last_state)
+                                norm_move = convert_to_normalized(move)
+                                #save current move and last state, as each [state, move] pair is the current state and the move
+                                #that **led** to the current state
+                                save_training_data(one_hot_state.flatten(), norm_move)
+                            last_state = state
                         break
 
                     elif not solvable:
@@ -83,7 +99,57 @@ class Level_Factory:
                     #make sure to release mutex even if not unique
                     self.gen_mutex.release()
 
+    import numpy as np
+
+    #normalize moves
+    def convert_to_normalized(self,move):
+         # Define a regular expression pattern to extract coordinates
+        pattern = re.compile(r"\((\d+),(\d+)\) -> \((\d+),(\d+)\)")
+        
+        # Search the string for matches
+        match = pattern.search(coord_string)
+        
+        # Validate the input string
+        if match is None:
+            raise ValueError("Input string format is invalid. Expected format: (x1,y1) -> (x2,y2)")
+            
+        # Extract coordinates and convert them to integers
+        x1, y1, x2, y2 = map(int, match.groups())
+        
+        # Create a NumPy array from the coordinates
+        coord_array = np.array([x1/5, y1/5, x2/5, y2/5])
+        
+        return coord_array
+
+    def convert_to_one_hot(self, state):
+        # Define a mapping from character to one-hot encoding
+        char_to_one_hot = {
+            ".": [1, 0, 0, 0, 0, 0],
+            "A": [0, 1, 0, 0, 0, 0],
+            "B": [0, 0, 1, 0, 0, 0],
+            "R": [0, 0, 0, 1, 0, 0],
+            "a": [0, 0, 0, 0, 1, 0],
+            "b": [0, 0, 0, 0, 0, 1],
+        }
+        
+        # Validate the input state
+        if not (isinstance(state, list) and all(isinstance(row, list) and len(row) == 6 for row in state) and len(state) == 6):
+            raise ValueError("Input state must be a 6x6 array.")
+        
+        # Initialize a 6x6x6 numpy array filled with zeros
+        one_hot_array = np.zeros((6, 6, 6), dtype=int)
+
+        # Fill the numpy array with one-hot encodings
+        for i in range(6):
+            for j in range(6):
+                char = state[i][j]
+                if char not in char_to_one_hot:
+                    raise ValueError(f"Invalid character {char} in state at position {i}, {j}")
+                one_hot_encoding = char_to_one_hot[char]
+                one_hot_array[i, j] = one_hot_encoding
                 
+        return one_hot_array
+            
 
     def save_level(self, level_data, filename="levels/level_data.json"):
         self.ld_mutex.acquire()
@@ -98,6 +164,20 @@ class Level_Factory:
         with open(filename, "w") as file:
             json.dump(existing_data, file, indent=4)
         self.ld_mutex.release()
+
+    def save_training_data(self, state, move, filename="levels/training_data.json"):
+    if not (isinstance(state, list) and isinstance(move, list)):
+        raise ValueError("Inputs should be of type list")
+        
+        # Storing arrays in a dictionary
+        data = {
+            "state": state,
+            "move": move
+        }
+        
+        # Writing the dictionary to a JSON file
+        with open(filename, 'w') as f:
+            json.dump(data, f)
 
     def generate_levels_parallel(self, num_processes, num, solvable=True):
         num = num//num_processes
