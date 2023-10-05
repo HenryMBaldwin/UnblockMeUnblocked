@@ -48,6 +48,10 @@ class Unblocker:
 			else:
 				return self.solve_shortest([board,empty_move])[1]
 
+	def update_grid(self,state):
+		if self.grid != None:
+			self.grid.grid = state
+
 	def print_state(self,state):
 		self.mutex.acquire()
 		if self.grid != None:
@@ -73,7 +77,7 @@ class Unblocker:
 			curr = self.queue.pop(0)
 			state = curr[0]
 			#print("Checking State")
-			#self.print_state(state)
+			self.update_grid(state)
 
 			move_list = copy.deepcopy(curr[1])
 			#check for win condition

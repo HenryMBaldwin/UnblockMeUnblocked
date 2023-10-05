@@ -40,4 +40,4 @@ loss = model.evaluate(X_test, Y_test)
 print('Test Loss:', loss)
 
 # Save the model if needed
-# model.save('unblock_me_solver_model.h5')
+model.save('models/unblock_me_solver')
