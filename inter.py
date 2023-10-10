@@ -31,38 +31,96 @@ class ml_unblocker:
 	#takes in a move from the ml model and outputs a state
 	def decode_move(self, move, state):
 
+		new_state = None
 
 		move = list(map(lambda x: int(x*5),move))
 
 		r1,c1,r2,c2 = move
 		gridside = self.unblocker.get_gridside(r1,c1,state)
 
+		block = state[r1][c1]
 		direction = ""
 		#get move direction and check for move validity based on coordinates
+		#using t for top/up and b for bottom/down to be consistant with gridside
 		if r1 != r2 && c1 != c2:
 			self.move_error("Can't move diagonally.", move)
 		if abs(r1-r2) > 1 || abs(c1-c2) > 1;
 			self.move_error("Can't move more than one position at a time.", move)
 		if r1 > r2:
-			direction = "u"
+			direction = "t"
 		elif r2 > r1:
-			direction = "d"
+			direction = "b"
 		elif c1 > c2:
 			direction = "l"
 		elif c2 > c1:
-			direction = "u"
+			direction = "r"
 		else:
 			self.move_error("No move was made.", move)
 
-		#check for move validity based on gridside of startin coordinate
+		#check for move validity based on gridside of starting coordinate and begin state genera
 		if gridside == "m":
 			self.move_error("Can't perform move on middle of block.", move)
-			
-		if gridside == 
+		if gridside == "n":
+			self.move_error("Can't perform a move on an empty space.", move)
+		if gridside == direction:
+			#check move validy based on location
+			match r1,c1, direction:
+				case 5, _, "d":
+					self.move_error("Cannot move downwards from row 5.", move)
+				case 0, _, "u":
+					self.move_error("Cannot move upward from row 0.", move)
+				case _, 0, "l":
+					self.move_error("Cannot move leftwards from col 0.", move)
+				case _, 5, "r":
+					self.move_error("Cannot move rightwards from col 5.", move)
+				case _,_,_:
+					new_state = self.state_from_move(gridside, block, state, r1, c1)
+		else:
+			self.move_error("Cant perform a move " + str(direction) + " on side " + str(gridside) + ".", move)
+
+		return new_state
+
+	def state_from_move(self, side, block, state, r, c):
+		#repurposed code from unblock.py
+		new_state = state
+		if block.isupper():
+			#move right
+			if side == "r" and c != 5 and b[r][c+1] == ".":
+				new_state[r][c+1] = block
+				if block == "B":
+					new_state[r][c-2] = "."
+				else:
+					new_state[r][c-1] = "."
+			#move left
+			if side == "l" and c != 0 and b[r][c-1] == ".":
+				new_state[r][c-1] = block
+				if block == "B":
+					new_state[r][c+2] = "."
+				else:
+					new_state[r][c+1] = "."
+		else:
+			#move down
+			if side == "d" and r != 5 and b[r+1][c] == ".":
+				new_state[r+1][c] = block
+				if block == "b":
+					new_state[r-2][c] = "."
+				else:
+					new_state[r-1][c] = '.'
+			#move up
+			if side == "u" and r != 0 and b[r-1][c] == ".":
+				new_state[r-1][c] = block
+				if block == "b":
+					new_state[r+2][c] = "."
+				else:
+					new_state[r+1][c] = '.'
+		return new_state
+
+		
 
 	def move_error(self, details, move):
 		print("Error Invalid Move: " + details + "\n" + self.pretty_print_move(move))
 		quit()
+
 	def pretty_print_move(self,move):
 		#pretty prints a move array 
 		r1,c1,r2,c2 = move
