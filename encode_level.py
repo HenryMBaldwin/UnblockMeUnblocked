@@ -416,6 +416,82 @@ class Menu_Button:
 	def click(self, args = None):
 		self.func()
 
+class Toggle_Button(Menu_Button):
+    
+    active_toggle = None  # This is the class-level variable to keep track of the active toggle button.
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.is_active = False
+
+    def draw(self):
+        # Draw the hollow square
+        border_thickness = 2
+        pygame.draw.rect(window, self.primary_color, (self.x, self.y, self.width, self.height), border_thickness)
+        
+        # Adjust the position to display text underneath the square
+        window.blit(self.text, (self.x + (self.width - self.text_box.width) / 2, self.y + self.height + 5))
+
+        # If the button is active, fill the square
+        if self.is_active:
+            inner_rect = pygame.Rect(self.x + border_thickness, self.y + border_thickness,
+                                     self.width - 2*border_thickness, self.height - 2*border_thickness)
+            pygame.draw.rect(window, self.primary_color, inner_rect)
+
+    def click(self, args=None):
+        if not self.is_active:
+            if Toggle_Button.active_toggle:  # Deactivate the currently active toggle button
+                Toggle_Button.active_toggle.is_active = False
+            self.is_active = True
+            Toggle_Button.active_toggle = self  # Update the active toggle button reference
+        super().click(args)
+
+class DropDownMenu(Menu_Button):
+
+    def __init__(self, x, y, options, text_x, manager, func):
+        # Ensure that options is a non-empty list
+        assert options, "Options list should not be empty"
+        
+        # Calling the __init__ method of the parent class
+        super().__init__(x, y, options[0], text_x, manager, func)
+        
+        self.options = options  # List of options to be displayed in the dropdown
+        self.active_option = options[0]  # Currently selected option
+        self.expanded = False  # Flag to check if the dropdown is expanded
+        self.option_height = self.height  # Height of each option in the dropdown
+
+    def draw(self):
+        # Draw the current active option
+        super().draw()
+
+        # Draw the options if the dropdown is expanded
+        if self.expanded:
+            for i, option in enumerate(self.options[1:], start=1):
+                rect = pygame.draw.rect(window, self.primary_color, 
+                                        (self.x, self.y + i*self.option_height, self.width, self.height))
+                option_text = self.font.render(option, True, self.font_color)
+                window.blit(option_text, (self.x + (self.width - option_text.get_rect().width)/2, 
+                                          self.y + i*self.option_height))
+
+    def click(self, args=None):
+        # If the dropdown is expanded, select the option that was clicked
+        if self.expanded:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            if self.x <= mouse_x <= self.x + self.width:
+                for i, option in enumerate(self.options):
+                    if self.y + i*self.option_height <= mouse_y <= self.y + (i+1)*self.option_height:
+                        self.active_option = option
+                        self.text = self.font.render(option, True, self.font_color)  # Update displayed text
+                        self.expanded = False  # Collapse the dropdown
+                        return
+        # Expand or collapse the dropdown
+        self.expanded = not self.expanded
+        
+        # Call the parent click method
+        super().click(args)
+
+
+
 
 
 
@@ -471,6 +547,8 @@ menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Load",10,menu_manager, grid.load_from_json)
 menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Rand",10, menu_manager, grid.generate_level)
+
+#toggle buttons
 # Track the currently selected block
 selected_block = None
 
