@@ -44,7 +44,11 @@ class Unblocker:
 		
 		else:
 			if smooth:
-				return self.smooth_moves(self.solve_shortest([board, empty_move])[1])
+				try:
+					return self.smooth_moves(self.solve_shortest([board, empty_move])[1])
+				except:
+					return []
+
 			else:
 				return self.solve_shortest([board,empty_move])[1]
 
