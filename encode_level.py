@@ -114,8 +114,11 @@ class Grid:
 
 					#get side from unblocker
 					side = self.unblocker.get_gridside(y,x,self.grid)
+
+					print("test side: " + self.unblocker.get_gridside(3,4,self.grid))
 					#only place blocks from top or left
 					if side == "u" or side == "l":
+						print("placing block at (" +str(x) + "," +str(y) +")")
 						coords = self.reverse_resolve(x,y)
 						#print(str(coords))
 						for block in buttons.block_arr:
@@ -166,7 +169,7 @@ class Grid:
 
 	#resolves real coords from grid coords
 	def reverse_resolve(self, x, y):
-		return(x*100, y *100)
+		return(x*100, y*100)
 
 	#checks if closest position is free for specific block	 
 	def check_pos(self, block, pos):
@@ -446,7 +449,7 @@ class Toggle_Button(Menu_Button):
             Toggle_Button.active_toggle = self  # Update the active toggle button reference
         super().click(args)
 
-class DropDownMenu(Menu_Button):
+class DropDown_Menu(Menu_Button):
 
     def __init__(self, x, y, options, text_x, manager, func):
         # Ensure that options is a non-empty list
@@ -547,6 +550,7 @@ menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Load",10,menu_manager, grid.load_from_json)
 menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Rand",10, menu_manager, grid.generate_level)
+#dropdown menu
 
 #toggle buttons
 # Track the currently selected block
