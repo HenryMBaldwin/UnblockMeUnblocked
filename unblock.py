@@ -82,6 +82,7 @@ class Unblocker:
 			state = curr[0]
 			#print("Checking State")
 			self.update_grid(state)
+			input("Step")
 
 			move_list = copy.deepcopy(curr[1])
 			#check for win condition
@@ -156,10 +157,20 @@ class Unblocker:
 						return "l"
 				elif curr == "B":
 					#never going to have two right next to each other
+					#scratch tht lol
 					if b[r][c-1] == "B":
-						if b[r][c+1] == "B":
+						if c == 1:
 							return "m"
-						return "r"
+						if b[r][c-2] == "B":
+							if c == 2:
+								return "r"
+							if b[r][c-3] == "B":
+								if c == 3:
+									return "l"
+								if c == 4:
+									return "m"
+							return "r"	
+						return "m"
 					return "l"
 				elif curr == "R":
 					if b[r][c-1] == "R":
@@ -187,9 +198,18 @@ class Unblocker:
 						return "u"
 				elif curr == "b":
 					if b[r-1][c] == "b":
-						if b[r+1][c] == "b":
+						if r == 1:
 							return "m"
-						return "d"
+						if b[r-2][c] == "b":
+							if r == 2:
+								return "d"
+							if b[r-3][c] == "b":
+								if r == 3:
+									return "u"
+								if r == 4:
+									return "m"
+							return "d"
+						return "m"
 					return "u"
 			print("error non a valid side")
 			return "n"
