@@ -82,8 +82,6 @@ class Unblocker:
 			state = curr[0]
 			#print("Checking State")
 			self.update_grid(state)
-			input("Step")
-
 			move_list = copy.deepcopy(curr[1])
 			#check for win condition
 			if state[2][5] == "R" and state[2][4] == "R":

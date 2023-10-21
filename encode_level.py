@@ -92,7 +92,7 @@ class Grid:
 
 	#decodes grid and places it on gameboard
 	def decode(self):
-		#self.print_state()
+		self.print_state()
 		#self.mutex.acquire()
 		#print("decoding")
 		encodings = {
@@ -114,11 +114,11 @@ class Grid:
 
 					#get side from unblocker
 					side = self.unblocker.get_gridside(y,x,self.grid)
-
-					print("test side: " + self.unblocker.get_gridside(3,4,self.grid))
+					#print(side)
+					#print("test side: " + self.unblocker.get_gridside(4,4,self.grid))
 					#only place blocks from top or left
 					if side == "u" or side == "l":
-						print("placing block at (" +str(x) + "," +str(y) +")")
+						#print("placing block at (" +str(x) + "," +str(y) +")")
 						coords = self.reverse_resolve(x,y)
 						#print(str(coords))
 						for block in buttons.block_arr:
@@ -144,7 +144,10 @@ class Grid:
 	#Updates a grid position
 	#This function exists because the urge to reference grid like grid[grid_x][grid_y] is too powerful and I keep making mistakes because of it
 	def update_grid_pos(self, x, y, val):
+		#print(str(x) + "," + str(y))
 		self.grid[y][x] = val
+		
+		
 
 	#Same reason as above but getter
 	def get_grid_pos(self, x, y):
