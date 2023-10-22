@@ -143,6 +143,12 @@ class Unblocker:
 						if c == 1:
 							return "r"
 						if b[r][c-2] == "A":
+							if c == 2:
+								return "l"
+							if b[r][c-3] == "A":
+								if c == 3:
+									return "r"
+								return "l"
 							if b[r][c+1] == "A":
 								return "l"
 						return "r"
@@ -184,6 +190,12 @@ class Unblocker:
 						if r ==	1:
 							return "d"
 						if b[r-2][c] == "a":
+							if r == 2:
+								return "u"
+							if b[r-3][c] == "a":
+								if r == 3:
+									return "d"
+								return "u" 
 							if b[r+1][c] == "a":
 								return "u"
 						return "d"

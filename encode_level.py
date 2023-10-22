@@ -115,7 +115,7 @@ class Grid:
 					#get side from unblocker
 					side = self.unblocker.get_gridside(y,x,self.grid)
 					#print(side)
-					#print("test side: " + self.unblocker.get_gridside(4,4,self.grid))
+					#print("test side: " + self.unblocker.get_gridside(5,3,self.grid))
 					#only place blocks from top or left
 					if side == "u" or side == "l":
 						#print("placing block at (" +str(x) + "," +str(y) +")")
@@ -542,7 +542,7 @@ Menu_Button(menu_button_x, menu_button_y, "Load",10,menu_manager, grid.load_from
 menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Rand",10, menu_manager, grid.generate_level)
 #dropdown menu
-options = ["ML", "DFS", "BFS"]
+options = ["ML", "DFS", "BFS "]
 menu_button_y = menu_button_y+25
 DropDown_Menu(menu_button_x, menu_button_y, options, 10, menu_manager, grid.set_solver)
 #toggle buttons
