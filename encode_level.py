@@ -542,7 +542,7 @@ Menu_Button(menu_button_x, menu_button_y, "Load",10,menu_manager, grid.load_from
 menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Rand",10, menu_manager, grid.generate_level)
 #dropdown menu
-options = ["ML", "DFS", "I", "LOVE", "SARAH", "<3"]
+options = ["ML", "DFS", "BFS"]
 menu_button_y = menu_button_y+25
 DropDown_Menu(menu_button_x, menu_button_y, options, 10, menu_manager, grid.set_solver)
 #toggle buttons
