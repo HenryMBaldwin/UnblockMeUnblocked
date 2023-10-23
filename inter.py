@@ -4,30 +4,50 @@ import data_factory
 import unblock
 # Load the model
 
-class ml_unblocker:
+class ML_Unblocker:
 
-	def __init__(self):
+	def __init__(self, grid):
 		self.model = load_model('models/unblock_me_solver')
 		#need some functions from here
 		self.data_f = data_factory.Level_Factory() 
 		self.unblocker = unblock.Unblocker()
+		self.moves = []
+		self.grid = grid
 
 	def solve_state(self, state):
 
 		processed_state = self.data_factory.convert_to_one_hot(state)
 
-		# Ensure that this new_state should be preprocessed (normalized/encoded) in the same way as your training data.
-		new_state = np.array([processed_new_state])  # Replace processed_new_state with your preprocessed state.
+		# Ensure that this new_state should be preprocessed (normalized/encoded) in the same way as training data.
+		new_state = np.array([processed_new_state])  #
 
 		new_state = new_state.reshape(-1, 6, 6, 6) 
 
 		# Use the model to predict the best move for the given state.
 		predicted_move = model.predict(new_state)
 
-		print(type(predicted_move))
-		# Now, you can decode the predicted_move back to your move representation.
-		decoded_move = decode_move(predicted_move)  # Replace decode_move with the actual function you use to decode your moves.
-	
+		#print(type(predicted_move))
+
+		
+		new_state, move = decode_move(predicted_move)  
+		
+		moves.append(move)
+
+		if state[2][5] == "R" and state[2][4] == "R":
+			#print("After examining " + str(i) + " game states the game was solved in") 
+			return moves
+
+		#visually update teh grid
+		update_grid(new_state)
+		
+
+		#solve new state
+		solve_state(new_state)
+
+	def update_grid(self,state):
+		if self.grid != None:
+			self.grid.grid = state
+
 	#takes in a move from the ml model and outputs a state
 	def decode_move(self, move, state):
 
@@ -42,9 +62,9 @@ class ml_unblocker:
 		direction = ""
 		#get move direction and check for move validity based on coordinates
 		#using t for top/up and b for bottom/down to be consistant with gridside
-		if r1 != r2 && c1 != c2:
+		if r1 != r2 and c1 != c2:
 			self.move_error("Can't move diagonally.", move)
-		if abs(r1-r2) > 1 || abs(c1-c2) > 1;
+		if abs(r1-r2) > 1 or abs(c1-c2) > 1:
 			self.move_error("Can't move more than one position at a time.", move)
 		if r1 > r2:
 			direction = "t"
@@ -78,7 +98,7 @@ class ml_unblocker:
 		else:
 			self.move_error("Cant perform a move " + str(direction) + " on side " + str(gridside) + ".", move)
 
-		return new_state
+		return [new_state, pretty_print_move(move)]
 
 	def state_from_move(self, side, block, state, r, c):
 		#repurposed code from unblock.py
@@ -125,6 +145,25 @@ class ml_unblocker:
 		#pretty prints a move array 
 		r1,c1,r2,c2 = move
 		return "(" + str(r1) + "," +str(c1) + ") -> " + "(" + str(r2) + "," + str(c2) +")"
+
+	def print_state(self,state):
+		self.mutex.acquire()
+		if self.grid != None:
+			self.grid.grid = state
+		
+		#prints a game state for debugging purposes		
+		for row in state:
+				line = "[ "
+				for cell in row:
+					line += cell + " "
+				line += "]"
+		#		print(line) 
+		#print("---------------")
+		self.mutex.release()
+
+#function to run solver on its own, without the GUI and threading nonsense. 
+def run:
+
 
 
 
