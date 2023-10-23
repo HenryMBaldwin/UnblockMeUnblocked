@@ -6,7 +6,7 @@ import generate_level
 from pygame.locals import *
 from threading import Thread, Lock
 import json
-
+import inter
 #Mutex
 mutex = Lock()
 
@@ -60,6 +60,9 @@ class Grid:
 		#other classes
 		self.generator = generate_level.Generator()
 		self.unblocker = unblock.Unblocker()
+		self.ml_unblocker = inter.ML_Unblocker(self)
+
+		self.solver = "ML"
 		
 		self.manager = manager
 		self.button_manager = button_manager
@@ -71,9 +74,12 @@ class Grid:
 
 	def solve(self):
 		#print("solve")
-		self.sol = Thread(target = self.unblocker.solve_board,args = (self.grid, self.mutex, self))
-		self.solving = True
-		self.sol.start()
+		if self.solver == "DFS":
+			self.sol = Thread(target = self.unblocker.solve_board,args = (self.grid, self.mutex, self))
+			self.solving = True
+			self.sol.start()
+		if self.solver == "ML":
+			self.sol = Thread(target = self.ml_unblocker.solve_state, args = (self.grid))
 		#print(str(len(sol))+" moves")
 		#for move in sol:
 		#	print(move)
@@ -302,7 +308,7 @@ class Grid:
 		self.decode()
 
 	def set_solver(self, option):
-		print(option)
+		self.solver = option
 
 
 #Block class to allow for easier collision detection
