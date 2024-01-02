@@ -29,10 +29,10 @@ BLOCK_SIZE = WINDOW_HEIGHT // GRID_SIZE
 
 #Define block types
 BLOCK_TYPES = {
-    "RED":[(2, 1), RED, "RED"], 
-    "BROWN":[(2, 1), BROWN, "BROWN"],  # 2 long block
-    "LONG_BROWN":[(3, 1), BROWN, "LONG_BROWN"]  # 3 long block
-      # 2 long red block
+	"RED":[(2, 1), RED, "RED"], 
+	"BROWN":[(2, 1), BROWN, "BROWN"],  # 2 long block
+	"LONG_BROWN":[(3, 1), BROWN, "LONG_BROWN"]  # 3 long block
+	  # 2 long red block
 }
 #center of each grid square for snapping and placement
 GRID_POSITIONS = [
@@ -72,14 +72,21 @@ class Grid:
 		self.solving = False
 		self.sol = None
 
+		self.debug = False
+
 	def solve(self):
 		#print("solve")
 		if self.solver == "DFS":
-			self.sol = Thread(target = self.unblocker.solve_board,args = (self.grid, self.mutex, self))
+			self.sol = Thread(target = self.unblocker.solve_board, args = (self.grid, self.mutex, self))
 			self.solving = True
 			self.sol.start()
 		if self.solver == "ML":
-			self.sol = Thread(target = self.ml_unblocker.solve_state, args = (self.grid))
+			print("Solving with ML.")
+			#self.sol = Thread(target = self.ml_unblocker.solve_state)
+			self.sol = Thread(target = self.ml_unblocker.solve_state, args = (self.grid,))
+			self.solving = True
+			self.sol.start()
+			
 		#print(str(len(sol))+" moves")
 		#for move in sol:
 		#	print(move)
@@ -320,6 +327,9 @@ class Grid:
 	def set_solver(self, option):
 		self.solver = option
 
+	def set_debug(self):
+		self.debug = not self.debug
+
 
 #Block class to allow for easier collision detection
 class Block:
@@ -449,45 +459,45 @@ class Menu_Button:
 #Main button for drop down menu
 class DropDown_Menu(Menu_Button):
 
-  def __init__(self, x, y, options, text_x, manager, func):
-      assert options, "Options list should not be empty"
-      super().__init__(x, y, options[0], text_x, manager, func)
-      
-      self.options = options  # List of options to be displayed in the dropdown
-      self.active_option = options[0]  # Currently selected option
-      self.expanded = False  # Flag to check if the dropdown is expanded
-      self.option_height = self.height  # Height of each option in the dropdown
-      self.dropdown_buttons = []  # List to store dynamically created dropdown buttons
+	def __init__(self, x, y, options, text_x, manager, func):
+		assert options, "Options list should not be empty"
+		super().__init__(x, y, options[0], text_x, manager, func)
+		
+		self.options = options  # List of options to be displayed in the dropdown
+		self.active_option = options[0]  # Currently selected option
+		self.expanded = False  # Flag to check if the dropdown is expanded
+		self.option_height = self.height  # Height of each option in the dropdown
+		self.dropdown_buttons = []  # List to store dynamically created dropdown buttons
 
-  def expand(self):
-      # Dynamically create dropdown buttons and register them with the menu manager
-      for i, option in enumerate(self.options):
-          btn = DropDown_Menu_Button(self.x, self.y + (i+1)*self.option_height, option, 10, self.manager, self.func, self)
-          self.dropdown_buttons.append(btn)
-      self.expanded = True
+	def expand(self):
+		# Dynamically create dropdown buttons and register them with the menu manager
+		for i, option in enumerate(self.options):
+			btn = DropDown_Menu_Button(self.x, self.y + (i+1)*self.option_height, option, 10, self.manager, self.func, self)
+			self.dropdown_buttons.append(btn)
+		self.expanded = True
 
-  def collapse(self):
-      # Unregister and delete the dynamically created dropdown buttons
-      for btn in self.dropdown_buttons:
-          btn.manager.remove(btn)
-          del btn
-      self.dropdown_buttons.clear()
-      self.expanded = False
+	def collapse(self):
+		# Unregister and delete the dynamically created dropdown buttons
+		for btn in self.dropdown_buttons:
+			btn.manager.remove(btn)
+			del btn
+		self.dropdown_buttons.clear()
+		self.expanded = False
 
-  def select_option(self, option):
-        # Handle option selection here
-        self.text = self.font.render(option, True, self.font_color)
-        self.collapse()
-        self.func(option) 
+	def select_option(self, option):
+		# Handle option selection here
+		self.text = self.font.render(option, True, self.font_color)
+		self.collapse()
+		self.func(option) 
 
-  def click(self, args=None):
-      if self.expanded:
-          # If the dropdown is expanded, delegate the click handling to the parent
-          # This will detect clicks on the dynamically created dropdown buttons
-          self.collapse()
-      else:
-          # If the dropdown is not expanded, expand it
-          self.expand()
+	def click(self, args=None):
+		if self.expanded:
+			# If the dropdown is expanded, delegate the click handling to the parent
+			# This will detect clicks on the dynamically created dropdown buttons
+			self.collapse()
+		else:
+			# If the dropdown is not expanded, expand it
+			self.expand()
 
 #sub buttons for dropdown menu
 class DropDown_Menu_Button(Menu_Button):
@@ -559,6 +569,8 @@ menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Rand",10, menu_manager, grid.generate_level)
 menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Print",10, menu_manager, grid.print_state)
+menu_button_y = menu_button_y+25
+Menu_Button(menu_button_x, menu_button_y, "Debug",10, menu_manager, grid.set_debug)
 
 #dropdown menu
 options = ["ML", "DFS", "BFS "]
@@ -581,50 +593,49 @@ while running:
 	#grid.print_state()
 	# Process events
 	for event in pygame.event.get():
-	    if event.type == pygame.QUIT:
-	        running = False
-	    elif event.type == pygame.MOUSEBUTTONDOWN:
-	        # Check if the left mouse button is pressed
-	        if event.button == 1:
-	            #check if a button has been clicked
-	        	button = button_manager.detect_click(pygame.mouse.get_pos())
-	        	#check if block has been clicked
-	        	block = block_manager.detect_click(pygame.mouse.get_pos())
-	        	#check if menubutton has been clicked. If so its function will instantly be called
-	        	menu_manager.detect_click(pygame.mouse.get_pos())
-	        	if not button == None:
-	        		#delete previous selected block
-	        		if not selected_block == None:
-	        			selected_block.remove()
-	        		#clone clicked button and add it to block_manager
-	        		selected_block = button.clone(block_manager)
-	           
-	            # place down currently selected block on grid
-	        	if not selected_block == None:
-	            	#check if on grid
-	            		if selected_block.grid_x != None:
-	            				#deselect block
-	            				grid.place(selected_block,(selected_block.grid_x,selected_block.grid_y))
-	            				selected_block = None
-	            				
-	            #delete currently placed block
-	        	elif not block == None:
-	        		grid.remove(block)
+		if event.type == pygame.QUIT:
+			running = False
+		elif event.type == pygame.MOUSEBUTTONDOWN:
+			# Check if the left mouse button is pressed
+			if event.button == 1:
+				#check if a button has been clicked
+				button = button_manager.detect_click(pygame.mouse.get_pos())
+				#check if block has been clicked
+				block = block_manager.detect_click(pygame.mouse.get_pos())
+				#check if menubutton has been clicked. If so its function will instantly be called
+				menu_manager.detect_click(pygame.mouse.get_pos())
+				if not button == None:
+					#delete previous selected block
+					if not selected_block == None:
+						selected_block.remove()
+					#clone clicked button and add it to block_manager
+					selected_block = button.clone(block_manager)
+			   
+				# place down currently selected block on grid
+				if not selected_block == None:
+					#check if on grid
+						if selected_block.grid_x != None:
+								#deselect block
+								grid.place(selected_block,(selected_block.grid_x,selected_block.grid_y))
+								selected_block = None
+								
+				#delete currently placed block
+				elif not block == None:
+					grid.remove(block)
 
-	    elif event.type == pygame.KEYDOWN:
-	    	#rotate block
-	     	if event.key == pygame.K_r:
-	     		if not selected_block == None:
-	     			selected_block.rotate()
-	     	#put away selected block
-	     	if event.key == pygame.K_ESCAPE:
-	     		if not selected_block == None:
-	     			selected_block.remove()
-	     			selected_block = None
+		elif event.type == pygame.KEYDOWN:#rotate block
+			if event.key == pygame.K_r:
+				if not selected_block == None:
+					selected_block.rotate()
+			 #put away selected block
+			if event.key == pygame.K_ESCAPE:
+				if not selected_block == None:
+					selected_block.remove()
+					selected_block = None
 
 	#handle snapping
 	if selected_block is not None:
-	        	grid.snap(selected_block, pygame.mouse.get_pos())
+				grid.snap(selected_block, pygame.mouse.get_pos())
 	mutex.release()
 	# Clear the window
 	window.fill(WHITE)
@@ -633,8 +644,9 @@ while running:
 	#grid.print_state()
 	# Draw the grid
 	for x in range(0, WINDOW_HEIGHT, BLOCK_SIZE):
-	    pygame.draw.line(window, GRAY, (0, x), (WINDOW_HEIGHT, x))
-	    pygame.draw.line(window, GRAY, (x, 0), (x, WINDOW_HEIGHT))
+		pygame.draw.line(window, GRAY, (0, x), (WINDOW_HEIGHT, x))
+		pygame.draw.line(window, GRAY, (x, 0), (x, WINDOW_HEIGHT))
+		
 
 	# Draw the block selection area
 	pygame.draw.rect(window, GRAY, (WINDOW_HEIGHT, 0, SELECTION_WIDTH, SELECTION_HEIGHT))
@@ -645,6 +657,15 @@ while running:
 	# Draw the other blocks
 	block_manager.draw()
 
+	#draw debug numbers
+	for x in range(0, WINDOW_HEIGHT, BLOCK_SIZE):
+		if grid.debug:
+			# Draw number pairs in each box
+			number_font = pygame.font.Font(None, 30)
+			for i in range(0, WINDOW_HEIGHT, BLOCK_SIZE):
+				for j in range(0, WINDOW_HEIGHT, BLOCK_SIZE):
+					number_text = number_font.render(f"({i // BLOCK_SIZE},{j // BLOCK_SIZE})", True, (128, 128, 128, 128))
+					window.blit(number_text, (i + 5, j + 5))
 	#draw Menu Buttons
 	menu_manager.draw()
 
