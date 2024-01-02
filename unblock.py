@@ -199,13 +199,7 @@ class Unblocker:
 							if b[r+1][c] == "a":
 								return "u"
 						return "d"
-					if b[r+1][c] == "a":
-						if r == 4:
-							return "u"
-						if b[r+2][c] == "a":
-							if b[r-1][c] == "a":
-								return "d"
-						return "u"
+					return "u"
 				elif curr == "b":
 					if b[r-1][c] == "b":
 						if r == 1:
@@ -221,7 +215,7 @@ class Unblocker:
 							return "d"
 						return "m"
 					return "u"
-			print("error non a valid side")
+			print("error not a valid side")
 			return "n"
 
 	#returns a list of possible next states and the corrisponding move like [state, move]
