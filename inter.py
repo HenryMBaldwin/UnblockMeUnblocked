@@ -162,7 +162,7 @@ class ML_Unblocker:
 		self.mutex.release()
 
 #function to run solver on its own, without the GUI and threading nonsense. 
-def run:
+
 
 
 

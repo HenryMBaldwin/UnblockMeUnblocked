@@ -111,6 +111,8 @@ class Grid:
 		#clear visual grid
 		self.remove_all_visual()
 
+		#print("in decode")
+		#self.print_state()
 		for y in range(len(self.grid)):
 			for x in range(len(self.grid[y])):
 				curr = self.get_grid_pos(x,y)
@@ -150,6 +152,10 @@ class Grid:
 	#Updates a grid position
 	#This function exists because the urge to reference grid like grid[grid_x][grid_y] is too powerful and I keep making mistakes because of it
 	def update_grid_pos(self, x, y, val):
+		if 0 > x or 5 < y:
+			print("Invalid value for x: "+ str(x))
+		if 0 > y or 5 < y:
+			print("Invalid value for y: "+ str(y))
 		#print(str(x) + "," + str(y))
 		self.grid[y][x] = val
 		
@@ -243,6 +249,7 @@ class Grid:
 		block.set_pos(ret[0],ret[1])
 
 	def place(self,block,grid_pos):
+
 		grid_x = grid_pos[0]
 		grid_y = grid_pos[1]
 
@@ -256,8 +263,9 @@ class Grid:
 		if block.vertical:
 			code_char = code_char.lower()
 
+		#print(code_char)
 		for i in range(3 if block.block_type[2] == "LONG_BROWN" else 2):
-			
+			#print(str(i))
 			if block.vertical:
 				self.update_grid_pos(grid_x, grid_y+i, code_char) 
 			else:
@@ -305,6 +313,8 @@ class Grid:
 	def generate_level(self):
 		level = self.generator.generate_level()
 		self.grid = level["grid"]
+		#print("decoding grid")
+		#self.print_state()
 		self.decode()
 
 	def set_solver(self, option):
@@ -547,6 +557,9 @@ menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Load",10,menu_manager, grid.load_from_json)
 menu_button_y = menu_button_y+25
 Menu_Button(menu_button_x, menu_button_y, "Rand",10, menu_manager, grid.generate_level)
+menu_button_y = menu_button_y+25
+Menu_Button(menu_button_x, menu_button_y, "Print",10, menu_manager, grid.print_state)
+
 #dropdown menu
 options = ["ML", "DFS", "BFS "]
 menu_button_y = menu_button_y+25

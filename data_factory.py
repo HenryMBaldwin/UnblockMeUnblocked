@@ -198,11 +198,11 @@ class Level_Factory:
 
         with mp.Pool(processes=num_processes) as pool:
             pool.starmap(self.parallel_handler, input_data)
+def run():
+    lfactory = Level_Factory()
 
-lfactory = Level_Factory()
+    st = time.time()
+    lfactory.generate_levels(2000, True)
+    et = time.time()
 
-st = time.time()
-lfactory.generate_levels(2000, True)
-et = time.time()
-
-print(str(et - st))
+    print(str(et - st))

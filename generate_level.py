@@ -65,12 +65,11 @@ class Generator:
 	# - no horizontal blocks on row 2
 	def place_block(self,block, r, c):
 
-		#print("Attempting to place "  + self.block_info[block] + " at ("+str(r)+","+str(c)+")") 
+		
 		grid = self.grid
 		ret = False
 		if r < 0 or c < 0 or r > 5 or c >5:
 			return False
-
 
 		match block:
 			case "R":
@@ -103,16 +102,20 @@ class Generator:
 					grid[r+2][c] =  block
 					ret = True
 		self.grid = grid
+		#if ret:
+			#print("Placed "  + self.block_info[block] + " at ("+str(r)+","+str(c)+")") 
+			#self.print_state()
+
 		return ret
 
 	def print_state(self):
-		#prints a game state for debugging purposes		
-		for row in grid:
+		#prints a game state for debugging purposes	
+		for row in self.grid:
 				line = "[ "
 				for cell in row:
 					line += cell + " "
 				line += "]"
-
+				print(line)
 	#generates random level
 	def generate_level(self):
 
@@ -165,5 +168,5 @@ class Generator:
 		#add grid to metadata
 
 		self.grid_data["grid"] = self.grid
-
+		
 		return self.grid_data
